@@ -1,22 +1,27 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, Users, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    familyCode: "",
     password: "",
     confirmPassword: "",
   });
-  const [registrationType, setRegistrationType] = useState<"join" | "create">("join");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { signUp } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -25,9 +30,57 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Registration attempt:", formData);
+    
+    if (!formData.fullName || !formData.email || !formData.password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    const { error } = await signUp(formData.email, formData.password, formData.fullName);
+    
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Registration failed",
+        description: error.message.includes("already registered")
+          ? "This email is already registered. Please sign in instead."
+          : error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Welcome to the family!",
+        description: "Your account has been created successfully.",
+      });
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -45,39 +98,11 @@ const Register = () => {
           </Link>
 
           <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            Join Your Family
+            Create Your Account
           </h1>
           <p className="text-muted-foreground mb-6">
-            Create an account to connect with your family circle.
+            Join the Magdalene Foundation and connect with your family.
           </p>
-
-          {/* Registration Type Toggle */}
-          <div className="flex gap-2 mb-8 p-1 bg-sage-100 rounded-xl">
-            <button
-              type="button"
-              onClick={() => setRegistrationType("join")}
-              className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
-                registrationType === "join"
-                  ? "bg-card shadow-card text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Users className="w-4 h-4 inline-block mr-2" />
-              Join Existing Circle
-            </button>
-            <button
-              type="button"
-              onClick={() => setRegistrationType("create")}
-              className={`flex-1 py-3 px-4 rounded-lg text-sm font-medium transition-all ${
-                registrationType === "create"
-                  ? "bg-card shadow-card text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <User className="w-4 h-4 inline-block mr-2" />
-              Create New Circle
-            </button>
-          </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -94,6 +119,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -112,32 +138,10 @@ const Register = () => {
                   onChange={handleChange}
                   className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
-
-            {registrationType === "join" && (
-              <div className="space-y-2">
-                <Label htmlFor="familyCode" className="text-foreground">
-                  Family Invitation Code
-                </Label>
-                <div className="relative">
-                  <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <Input
-                    id="familyCode"
-                    type="text"
-                    placeholder="Enter your invitation code"
-                    value={formData.familyCode}
-                    onChange={handleChange}
-                    className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
-                    required
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Ask a family Superuser for your invitation code
-                </p>
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-foreground">
@@ -153,6 +157,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="pl-11 pr-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -182,13 +187,23 @@ const Register = () => {
                   onChange={handleChange}
                   className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
 
-            <Button type="submit" variant="hero" className="w-full mt-6" size="lg">
-              {registrationType === "join" ? "Join Family Circle" : "Create Family Circle"}
-              <ArrowRight className="w-5 h-5 ml-2" />
+            <Button type="submit" variant="hero" className="w-full mt-6" size="lg" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
           </form>
 
