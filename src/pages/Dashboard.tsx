@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   GitBranch,
@@ -24,9 +24,12 @@ import {
   TrendingUp,
   Users,
   Heart,
+  Loader2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 // Sidebar navigation items
 const navItems = [
@@ -38,18 +41,6 @@ const navItems = [
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
-
-// Mock user data
-const currentUser = {
-  name: "Thabo Molefe",
-  generation: "Third Generation",
-  location: "Johannesburg, South Africa",
-  occupation: "Software Engineer",
-  avatar: "TM",
-  contributionPoints: 245,
-  badges: ["Storyteller", "Bridge Builder"],
-  services: ["Tech Support", "Photography"],
-};
 
 // Mock announcements
 const announcements = [
@@ -86,6 +77,48 @@ const familyStats = [
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  
+  const { user, profile, loading, signOut } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/login");
+    }
+  }, [user, loading, navigate]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully.",
+    });
+    navigate("/");
+  };
+
+  // Show loading while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated
+  if (!user) {
+    return null;
+  }
+
+  const displayName = profile?.full_name || user.email?.split("@")[0] || "User";
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -178,10 +211,10 @@ const Dashboard = () => {
                   className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-primary-foreground text-sm font-semibold">
-                    {currentUser.avatar}
+                    {initials}
                   </div>
                   <span className="hidden md:block text-sm font-medium text-foreground">
-                    {currentUser.name}
+                    {displayName}
                   </span>
                   <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
                 </button>
@@ -196,8 +229,8 @@ const Dashboard = () => {
                       className="absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-xl shadow-elevated overflow-hidden z-50"
                     >
                       <div className="p-3 border-b border-border">
-                        <p className="font-medium text-foreground">{currentUser.name}</p>
-                        <p className="text-sm text-muted-foreground">{currentUser.generation}</p>
+                        <p className="font-medium text-foreground">{displayName}</p>
+                        <p className="text-sm text-muted-foreground">{user.email}</p>
                       </div>
                       <div className="p-2">
                         <Link
@@ -223,7 +256,10 @@ const Dashboard = () => {
                         </Link>
                       </div>
                       <div className="p-2 border-t border-border">
-                        <button className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted rounded-lg transition-colors w-full">
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted rounded-lg transition-colors w-full"
+                        >
                           <LogOut className="w-4 h-4" />
                           Sign Out
                         </button>
@@ -246,7 +282,7 @@ const Dashboard = () => {
             className="mb-8"
           >
             <h2 className="font-display text-2xl lg:text-3xl font-bold text-foreground mb-2">
-              Welcome back, {currentUser.name.split(" ")[0]}!
+              Welcome back, {displayName.split(" ")[0]}!
             </h2>
             <p className="text-muted-foreground">
               Here's what's happening in your family circle today.
@@ -328,53 +364,41 @@ const Dashboard = () => {
             >
               <div className="bg-gradient-to-br from-sage-500 to-sage-600 p-6 text-center">
                 <div className="w-20 h-20 mx-auto rounded-full bg-primary-foreground/20 flex items-center justify-center text-primary-foreground text-2xl font-bold mb-3">
-                  {currentUser.avatar}
+                  {initials}
                 </div>
                 <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                  {currentUser.name}
+                  {displayName}
                 </h3>
-                <p className="text-primary-foreground/70 text-sm">{currentUser.generation}</p>
+                <p className="text-primary-foreground/70 text-sm">
+                  {profile?.generation || "New Member"}
+                </p>
               </div>
               <div className="p-6 space-y-4">
                 <div className="flex items-center gap-3 text-sm">
                   <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{currentUser.location}</span>
+                  <span className="text-foreground">
+                    {profile?.location || "Location not set"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Briefcase className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{currentUser.occupation}</span>
+                  <span className="text-foreground">
+                    {profile?.occupation || "Occupation not set"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   <Gift className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{currentUser.contributionPoints} points</span>
+                  <span className="text-foreground">
+                    {profile?.contribution_points || 0} points
+                  </span>
                 </div>
 
                 <div className="pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-2">Services Offered</p>
-                  <div className="flex flex-wrap gap-2">
-                    {currentUser.services.map((service) => (
-                      <span
-                        key={service}
-                        className="px-3 py-1 bg-sage-100 text-sage-700 text-xs rounded-full"
-                      >
-                        {service}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <p className="text-xs text-muted-foreground mb-2">Badges</p>
-                  <div className="flex flex-wrap gap-2">
-                    {currentUser.badges.map((badge) => (
-                      <span
-                        key={badge}
-                        className="px-3 py-1 bg-primary/10 text-primary text-xs rounded-full font-medium"
-                      >
-                        {badge}
-                      </span>
-                    ))}
-                  </div>
+                  <Link to="/profile">
+                    <Button variant="outline" className="w-full">
+                      Edit Profile
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -395,7 +419,7 @@ const Dashboard = () => {
                 { icon: BookHeart, label: "Record a Story", href: "/tales/new" },
                 { icon: GitBranch, label: "View Family Tree", href: "/family-tree" },
                 { icon: Sparkles, label: "Ask MAGGIE", href: "/maggie" },
-                { icon: Users, label: "Invite Family", href: "/invite" },
+                { icon: Users, label: "View Members", href: "/members" },
               ].map((action) => (
                 <Link
                   key={action.label}

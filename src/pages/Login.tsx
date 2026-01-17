@@ -1,21 +1,57 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { signIn } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
-    console.log("Login attempt:", { email, password });
+    
+    if (!email || !password) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    const { error } = await signIn(email, password);
+    
+    setIsLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Sign in failed",
+        description: error.message === "Invalid login credentials" 
+          ? "Invalid email or password. Please try again."
+          : error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully signed in.",
+      });
+      navigate("/dashboard");
+    }
   };
 
   return (
@@ -54,22 +90,15 @@ const Login = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
-                </Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <Label htmlFor="password" className="text-foreground">
+                Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
@@ -80,6 +109,7 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-11 pr-11 h-12 bg-card border-sage-200 focus:border-primary"
                   required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -95,16 +125,25 @@ const Login = () => {
               </div>
             </div>
 
-            <Button type="submit" variant="hero" className="w-full" size="lg">
-              Sign In
-              <ArrowRight className="w-5 h-5 ml-2" />
+            <Button type="submit" variant="hero" className="w-full" size="lg" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
           </form>
 
           <p className="text-center mt-8 text-muted-foreground">
             Don't have an account?{" "}
             <Link to="/register" className="text-primary font-medium hover:underline">
-              Join your family
+              Create an account
             </Link>
           </p>
         </motion.div>
