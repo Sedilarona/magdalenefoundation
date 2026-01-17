@@ -10,6 +10,9 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import FamilyTree from "./pages/FamilyTree";
 import Tales from "./pages/Tales";
+import Games from "./pages/Games";
+import Resources from "./pages/Resources";
+import Library from "./pages/Library";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +31,9 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/family-tree" element={<FamilyTree />} />
             <Route path="/tales" element={<Tales />} />
+            <Route path="/games" element={<Games />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/library" element={<Library />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
