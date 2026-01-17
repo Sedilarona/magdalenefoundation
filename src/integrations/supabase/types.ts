@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      conversation_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       family_members: {
         Row: {
           bio: string | null
@@ -85,6 +109,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hymns: {
+        Row: {
+          author: string | null
+          created_at: string
+          hymn_book: string
+          hymn_number: number
+          id: string
+          language: string
+          lyrics: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          hymn_book?: string
+          hymn_number: number
+          id?: string
+          language?: string
+          lyrics: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          hymn_book?: string
+          hymn_number?: number
+          id?: string
+          language?: string
+          lyrics?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
