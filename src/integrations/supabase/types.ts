@@ -188,6 +188,36 @@ export type Database = {
         }
         Relationships: []
       }
+      scripture_content: {
+        Row: {
+          book_id: string
+          chapter_number: number | null
+          content: string
+          created_at: string
+          id: string
+          section_title: string | null
+          verse_number: number | null
+        }
+        Insert: {
+          book_id: string
+          chapter_number?: number | null
+          content: string
+          created_at?: string
+          id?: string
+          section_title?: string | null
+          verse_number?: number | null
+        }
+        Update: {
+          book_id?: string
+          chapter_number?: number | null
+          content?: string
+          created_at?: string
+          id?: string
+          section_title?: string | null
+          verse_number?: number | null
+        }
+        Relationships: []
+      }
       tales: {
         Row: {
           category: string | null
