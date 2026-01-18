@@ -2,3 +2,6 @@ project_id = "ybvzmradjnfozyrbtggg"
 
 [functions.maggie]
 verify_jwt = false
+
+[functions.notify-new-profile]
+verify_jwt = false
