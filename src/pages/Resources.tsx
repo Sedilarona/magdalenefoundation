@@ -48,6 +48,15 @@ interface Resource {
   language: string;
   available: boolean;
   hasHymns?: boolean;
+  hasScripture?: boolean;
+}
+
+interface ScriptureContent {
+  id: string;
+  book_id: string;
+  chapter_number: number | null;
+  content: string;
+  section_title: string | null;
 }
 
 interface Hymn {
@@ -97,13 +106,24 @@ const resources: Resource[] = [
     available: false,
   },
   {
+    id: "kjv",
+    title: "KJV Bible",
+    description: "The King James Version of the Holy Bible",
+    category: "scripture",
+    icon: Book,
+    language: "English",
+    available: true,
+    hasScripture: true,
+  },
+  {
     id: "quran",
     title: "The Holy Quran",
-    description: "The central religious text of Islam",
+    description: "The central religious text of Islam with English translation",
     category: "scripture",
     icon: Book,
     language: "Arabic/English",
-    available: false,
+    available: true,
+    hasScripture: true,
   },
 ];
 
@@ -121,6 +141,9 @@ const Resources = () => {
   const [hymns, setHymns] = useState<Hymn[]>([]);
   const [selectedHymn, setSelectedHymn] = useState<Hymn | null>(null);
   const [loadingHymns, setLoadingHymns] = useState(false);
+  const [scriptures, setScriptures] = useState<ScriptureContent[]>([]);
+  const [selectedScripture, setSelectedScripture] = useState<ScriptureContent | null>(null);
+  const [loadingScriptures, setLoadingScriptures] = useState(false);
   
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -134,6 +157,9 @@ const Resources = () => {
   useEffect(() => {
     if (selectedResource?.hasHymns) {
       loadHymns();
+    }
+    if (selectedResource?.hasScripture) {
+      loadScriptures(selectedResource.id);
     }
   }, [selectedResource]);
 
@@ -149,6 +175,20 @@ const Resources = () => {
       setHymns(data);
     }
     setLoadingHymns(false);
+  };
+
+  const loadScriptures = async (bookId: string) => {
+    setLoadingScriptures(true);
+    const { data, error } = await supabase
+      .from("scripture_content")
+      .select("*")
+      .eq("book_id", bookId)
+      .order("chapter_number", { ascending: true });
+    
+    if (!error && data) {
+      setScriptures(data as ScriptureContent[]);
+    }
+    setLoadingScriptures(false);
   };
 
   if (loading) {
@@ -175,6 +215,12 @@ const Resources = () => {
     !searchQuery || 
     hymn.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     hymn.hymn_number.toString().includes(searchQuery)
+  );
+
+  const filteredScriptures = scriptures.filter((scripture) =>
+    !searchQuery ||
+    scripture.section_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    scripture.content.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -246,14 +292,17 @@ const Resources = () => {
                 {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
               <div className="flex items-center gap-2">
-                {(selectedResource || selectedHymn) ? (
+                {(selectedResource || selectedHymn || selectedScripture) ? (
                   <button
                     onClick={() => {
                       if (selectedHymn) {
                         setSelectedHymn(null);
+                      } else if (selectedScripture) {
+                        setSelectedScripture(null);
                       } else {
                         setSelectedResource(null);
                         setHymns([]);
+                        setScriptures([]);
                       }
                     }}
                     className="text-muted-foreground hover:text-foreground transition-colors"
@@ -270,6 +319,7 @@ const Resources = () => {
                 )}
                 <h1 className="font-display text-xl font-semibold text-foreground">
                   {selectedHymn ? `Hymn ${selectedHymn.hymn_number}` : 
+                   selectedScripture ? selectedScripture.section_title :
                    selectedResource ? selectedResource.title : "Family Resources"}
                 </h1>
               </div>
@@ -300,6 +350,87 @@ const Resources = () => {
                   </div>
                 </div>
               </div>
+            </motion.div>
+          ) : selectedScripture ? (
+            /* Individual Scripture View */
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="max-w-2xl mx-auto"
+            >
+              <div className="bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden">
+                <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-6 text-primary-foreground">
+                  <span className="text-sm opacity-80">
+                    {selectedResource?.title} - Chapter {selectedScripture.chapter_number}
+                  </span>
+                  <h2 className="font-display text-2xl font-bold mt-1">{selectedScripture.section_title}</h2>
+                </div>
+                <div className="p-6">
+                  <div className="whitespace-pre-line text-foreground leading-relaxed text-lg">
+                    {selectedScripture.content}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          ) : selectedResource?.hasScripture ? (
+            /* Scripture List View */
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              {/* Search */}
+              <div className="relative mb-6 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search chapters..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              {loadingScriptures ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="grid gap-3">
+                  {filteredScriptures.map((scripture) => (
+                    <motion.button
+                      key={scripture.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => setSelectedScripture(scripture)}
+                      className="w-full text-left bg-card rounded-xl border border-sage-100 p-4 hover:shadow-soft hover:border-sage-200 transition-all flex items-center gap-4"
+                    >
+                      <div className="w-12 h-12 rounded-lg bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <Book className="w-6 h-6 text-emerald-700" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-display font-semibold text-foreground truncate">
+                          {scripture.section_title || `Chapter ${scripture.chapter_number}`}
+                        </h3>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {scripture.content.slice(0, 100)}...
+                        </p>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                    </motion.button>
+                  ))}
+                </div>
+              )}
+
+              {!loadingScriptures && filteredScriptures.length === 0 && (
+                <div className="text-center py-12">
+                  <Book className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-display text-lg font-semibold text-foreground mb-2">
+                    No chapters found
+                  </h3>
+                  <p className="text-muted-foreground">
+                    Try a different search term
+                  </p>
+                </div>
+              )}
             </motion.div>
           ) : selectedResource?.hasHymns ? (
             /* Hymn List View */
@@ -453,7 +584,7 @@ const Resources = () => {
                             onClick={() => setSelectedResource(resource)}
                           >
                             <ExternalLink className="w-4 h-4" />
-                            {resource.hasHymns ? "View Hymns" : "Read Online"}
+                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : "Read Online"}
                           </Button>
                         ) : (
                           <div className="w-full text-center py-2 text-sm text-muted-foreground bg-sage-50 rounded-lg">
