@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -93,6 +93,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         },
       },
     });
+
+    // Send notification email for new profile
+    if (!error && data.user) {
+      try {
+        await supabase.functions.invoke("notify-new-profile", {
+          body: {
+            profileId: data.user.id,
+            fullName: fullName,
+            email: email,
+          },
+        });
+        console.log("Profile notification sent");
+      } catch (notifyError) {
+        console.error("Failed to send notification:", notifyError);
+        // Don't fail signup if notification fails
+      }
+    }
     
     return { error };
   };

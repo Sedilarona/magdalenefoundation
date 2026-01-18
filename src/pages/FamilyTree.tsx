@@ -12,19 +12,19 @@ import {
   Menu,
   X,
   Settings,
-  ChevronDown,
   ChevronRight,
-  User,
-  Users,
+  Loader2,
+  Search,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
-// Sidebar navigation items
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: GitBranch, label: "Family Tree", href: "/family-tree" },
+  { icon: GitBranch, label: "Family Tree", href: "/family-tree", active: true },
   { icon: BookHeart, label: "Our Tales", href: "/tales" },
   { icon: Library, label: "Library", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
@@ -32,354 +32,121 @@ const navItems = [
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
-// Family tree data based on the image
 interface FamilyMember {
   id: string;
-  name: string;
-  nickname?: string;
-  gender: "male" | "female" | "angel";
-  birthYear?: string;
-  deathYear?: string;
-  spouse?: string;
+  full_name: string;
+  nickname: string | null;
+  gender: string | null;
+  birth_year: string | null;
+  death_year: string | null;
+  is_deceased: boolean | null;
+  generation_level: number | null;
+  location: string | null;
+  occupation: string | null;
+  parent_id: string | null;
+  spouse_id: string | null;
   children?: FamilyMember[];
 }
 
-const familyTreeData: FamilyMember = {
-  id: "magdeline",
-  name: "Magdeline Bodilenyane",
-  nickname: "Magatelane",
-  gender: "female",
-  deathYear: "02/2002",
-  children: [
-    {
-      id: "tshose",
-      name: "Tshose Edward",
-      gender: "male",
-      spouse: "Thomamiso Kgafela",
-      children: [
-        {
-          id: "seabe",
-          name: "Seabe Ogomoditse Hetanang",
-          gender: "male",
-          children: [
-            {
-              id: "thuso",
-              name: "Thuso Boitumelo Hetanang",
-              gender: "male",
-              children: [
-                { id: "thobo", name: "Thobo Hetanang", gender: "male" },
-                { id: "tema", name: "Tema Hetanang", gender: "male" },
-              ],
-            },
-            { id: "kago", name: "Kago Hetanang", gender: "female" },
-          ],
-        },
-        {
-          id: "dineo",
-          name: "Dineo Kgafela",
-          gender: "female",
-          children: [
-            { id: "thabang", name: "Thabang Kgafela", gender: "male" },
-            { id: "omphile", name: "Omphile Kgafela", gender: "female" },
-            { id: "tlotlo", name: "Tlotlo Phalatsa", gender: "female" },
-          ],
-        },
-        {
-          id: "lesego",
-          name: "Lesego Kgafela",
-          gender: "female",
-          children: [
-            { id: "prince", name: "Prince Kgafela", gender: "male" },
-            { id: "princess", name: "Princess Kgafela", gender: "female" },
-          ],
-        },
-        {
-          id: "tefo-k",
-          name: "Tefo Kgafela",
-          gender: "male",
-          children: [
-            { id: "latoyah", name: "Latoyah Motshelanoka", gender: "female" },
-          ],
-        },
-        {
-          id: "letsogile",
-          name: "Letsogile Kgafela",
-          gender: "female",
-          children: [
-            { id: "tumiso", name: "Tumiso Segale", gender: "male" },
-            { id: "mosa", name: "Mosa Segale", gender: "female" },
-          ],
-        },
-        { id: "bontle", name: "Bontle Kgafela", gender: "female" },
-      ],
-    },
-    {
-      id: "lawerance",
-      name: "Lawerance Bodilenyane",
-      gender: "male",
-      spouse: "Judith Bodilenyane",
-      children: [
-        {
-          id: "kabelo",
-          name: "Kabelo Joyce Bodilenyane",
-          gender: "female",
-          children: [
-            { id: "leile", name: "Leile Bodilenyane-Dube", gender: "female" },
-          ],
-        },
-        {
-          id: "topo",
-          name: "Topo Bodilenyane",
-          gender: "male",
-          children: [
-            { id: "anaya", name: "Anaya Bodilenyane-Tlhabologang", gender: "female" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "tshepho",
-      name: "Tshepho Poane",
-      gender: "female",
-      children: [
-        {
-          id: "patrick",
-          name: "Patrick Keamogetse Jansen",
-          gender: "male",
-          children: [
-            { id: "lebone", name: "Lebone Jansen", gender: "female" },
-            { id: "lelentle", name: "Lelentle Jansen", gender: "female" },
-            { id: "danny", name: "Danny Jansen", gender: "male" },
-          ],
-        },
-        {
-          id: "tumisang",
-          name: "Tumisang Pelonomi Poane",
-          gender: "female",
-          children: [
-            { id: "leina", name: "Leina Poane", gender: "female" },
-            { id: "liana", name: "Liana Poane", gender: "female" },
-          ],
-        },
-        {
-          id: "oaitse",
-          name: "Oaitse Poane",
-          gender: "male",
-          children: [
-            { id: "riley", name: "Riley Mdaku", gender: "male" },
-          ],
-        },
-        {
-          id: "oankgoga",
-          name: "Oankgoga Poane",
-          gender: "female",
-          children: [
-            { id: "abale", name: "Abale Poane", gender: "female" },
-            { id: "zoe", name: "Zoe Poane", gender: "female" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "grace",
-      name: "Grace Poane",
-      gender: "female",
-      children: [
-        {
-          id: "tshidiso",
-          name: "Tshidiso Mpho Gabegwe",
-          gender: "male",
-          children: [
-            { id: "tlaang", name: "Tlaang Gabegwe", gender: "female" },
-            { id: "aasa", name: "Aasa Gabegwe", gender: "female" },
-          ],
-        },
-        {
-          id: "tefo-m",
-          name: "Tefo Maipelo Kebitseng",
-          gender: "female",
-          children: [
-            { id: "letso", name: "Letso Kebitseng", gender: "male" },
-            { id: "nyakallo", name: "Nyakallo Kebitseng", gender: "female" },
-          ],
-        },
-        {
-          id: "mopati",
-          name: "Mopati Moupo",
-          gender: "male",
-          children: [
-            { id: "warona", name: "Warona Castro", gender: "female" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "donald",
-      name: "Donald Joyce Keagakwa Poane",
-      gender: "male",
-      children: [
-        {
-          id: "kelebogile",
-          name: "Kelebogile Poane",
-          gender: "female",
-          deathYear: "2011",
-          children: [
-            { id: "loago", name: "Loago Poane", gender: "female" },
-          ],
-        },
-        {
-          id: "kefilwe",
-          name: "Kefilwe Poane",
-          gender: "female",
-          children: [
-            { id: "letang", name: "Letang Poane", gender: "male" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "florance",
-      name: "Florance Basetsana Poane",
-      gender: "female",
-      deathYear: "1988",
-      children: [
-        {
-          id: "keemenao",
-          name: "Keemenao Kealeboga Kabalano",
-          gender: "female",
-          children: [
-            { id: "larona", name: "Larona Gabositwe", gender: "female" },
-            { id: "kutlwano", name: "Kutlwano Kabalano", gender: "male" },
-          ],
-        },
-      ],
-    },
-    {
-      id: "bawili",
-      name: "Bawili Caroline Sedilame Motladiile",
-      gender: "female",
-      deathYear: "1999",
-      children: [
-        {
-          id: "mooketsi",
-          name: "Mooketsi Poane",
-          gender: "male",
-          spouse: "Palesa Mohlomi",
-          children: [
-            { id: "motheo", name: "Motheo Mohlomi", gender: "male" },
-            { id: "lefika", name: "Lefika Mohlomi", gender: "male" },
-            { id: "seiso", name: "Seiso Poane", gender: "male" },
-            { id: "ajay", name: "Ajay Poane", gender: "male" },
-          ],
-        },
-        {
-          id: "gaone",
-          name: "Gaone Poane",
-          gender: "female",
-          children: [
-            { id: "sedilame", name: "Sedilame Poane", gender: "female" },
-          ],
-        },
-        {
-          id: "obakeng",
-          name: "Obakeng Poane",
-          gender: "male",
-          children: [
-            { id: "imani", name: "Imani Bontshetse", gender: "female" },
-            { id: "halimah", name: "Halimah Mantha", gender: "female" },
-          ],
-        },
-        { id: "olefile", name: "Olefile Poane", gender: "female" },
-      ],
-    },
-  ],
-};
-
-// Member node component
 const MemberNode = ({ 
   member, 
-  level = 0,
   isExpanded,
-  onToggle 
+  onToggle,
+  hasChildren 
 }: { 
   member: FamilyMember; 
-  level?: number;
   isExpanded: boolean;
   onToggle: () => void;
+  hasChildren: boolean;
 }) => {
-  const hasChildren = member.children && member.children.length > 0;
-  
   const getGenderStyles = () => {
+    if (member.is_deceased) {
+      return "bg-purple-100 border-purple-300 text-purple-900"; // Angels
+    }
     switch (member.gender) {
       case "male":
-        return "bg-blue-100 border-blue-300 text-blue-900";
+        return "bg-blue-100 border-blue-400 text-blue-900";
       case "female":
-        return "bg-amber-100 border-amber-300 text-amber-900";
-      case "angel":
-        return "bg-purple-100 border-purple-300 text-purple-900";
+        return "bg-pink-100 border-pink-400 text-pink-900";
       default:
         return "bg-muted border-border text-foreground";
     }
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className={`relative px-4 py-2 rounded-xl border-2 ${getGenderStyles()} min-w-[160px] text-center shadow-sm cursor-pointer hover:shadow-md transition-shadow`}
-        onClick={hasChildren ? onToggle : undefined}
-      >
-        <div className="flex items-center justify-center gap-2">
-          {hasChildren && (
-            <motion.span
-              animate={{ rotate: isExpanded ? 90 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </motion.span>
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={`relative px-4 py-3 rounded-xl border-2 ${getGenderStyles()} min-w-[180px] text-center shadow-sm cursor-pointer hover:shadow-md transition-all`}
+      onClick={hasChildren ? onToggle : undefined}
+    >
+      <div className="flex items-center justify-center gap-2">
+        {hasChildren && (
+          <motion.span
+            animate={{ rotate: isExpanded ? 90 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </motion.span>
+        )}
+        <div>
+          <p className="font-medium text-sm">{member.full_name}</p>
+          {member.nickname && (
+            <p className="text-xs opacity-75">"{member.nickname}"</p>
           )}
-          <div>
-            <p className="font-medium text-sm">{member.name}</p>
-            {member.nickname && (
-              <p className="text-xs opacity-75">"{member.nickname}"</p>
-            )}
-            {member.spouse && (
-              <p className="text-xs mt-1 font-medium">&amp; {member.spouse}</p>
-            )}
-            {member.deathYear && (
-              <p className="text-xs opacity-60">✝ {member.deathYear}</p>
-            )}
-          </div>
+          {member.is_deceased && member.death_year && (
+            <p className="text-xs opacity-60 mt-1">✝ {member.death_year}</p>
+          )}
+          {member.is_deceased && !member.death_year && (
+            <p className="text-xs opacity-60 mt-1">✝ Passed</p>
+          )}
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
-// Recursive tree branch component
 const TreeBranch = ({ 
   member, 
-  level = 0,
+  allMembers,
   expandedNodes,
   toggleNode
 }: { 
   member: FamilyMember; 
-  level?: number;
+  allMembers: FamilyMember[];
   expandedNodes: Set<string>;
   toggleNode: (id: string) => void;
 }) => {
   const isExpanded = expandedNodes.has(member.id);
-  const hasChildren = member.children && member.children.length > 0;
+  const children = allMembers.filter(m => m.parent_id === member.id);
+  const hasChildren = children.length > 0;
+  
+  // Find spouse
+  const spouse = member.spouse_id 
+    ? allMembers.find(m => m.id === member.spouse_id)
+    : null;
 
   return (
     <div className="flex flex-col items-center">
-      <MemberNode 
-        member={member} 
-        level={level}
-        isExpanded={isExpanded}
-        onToggle={() => toggleNode(member.id)}
-      />
+      <div className="flex items-center gap-2">
+        <MemberNode 
+          member={member}
+          isExpanded={isExpanded}
+          onToggle={() => toggleNode(member.id)}
+          hasChildren={hasChildren}
+        />
+        {spouse && (
+          <>
+            <div className="w-4 h-0.5 bg-sage-400" />
+            <MemberNode 
+              member={spouse}
+              isExpanded={false}
+              onToggle={() => {}}
+              hasChildren={false}
+            />
+          </>
+        )}
+      </div>
       
       <AnimatePresence>
         {hasChildren && isExpanded && (
@@ -390,26 +157,26 @@ const TreeBranch = ({
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            {/* Vertical connector */}
             <div className="w-0.5 h-6 bg-sage-300 mx-auto" />
             
-            {/* Horizontal connector bar */}
-            {member.children!.length > 1 && (
-              <div className="h-0.5 bg-sage-300 mx-4" style={{ 
-                width: `calc(${Math.min(member.children!.length, 4) * 180}px - 2rem)` 
-              }} />
+            {children.length > 1 && (
+              <div 
+                className="h-0.5 bg-sage-300 mx-auto" 
+                style={{ width: `${Math.min(children.length, 5) * 200}px` }} 
+              />
             )}
             
-            {/* Children */}
             <div className="flex flex-wrap justify-center gap-4 pt-2">
-              {member.children!.map((child) => (
+              {children
+                .filter(child => !child.spouse_id || child.id < (child.spouse_id || ''))
+                .map((child) => (
                 <div key={child.id} className="flex flex-col items-center">
-                  {member.children!.length > 1 && (
+                  {children.length > 1 && (
                     <div className="w-0.5 h-4 bg-sage-300" />
                   )}
                   <TreeBranch 
-                    member={child} 
-                    level={level + 1}
+                    member={child}
+                    allMembers={allMembers}
                     expandedNodes={expandedNodes}
                     toggleNode={toggleNode}
                   />
@@ -425,15 +192,41 @@ const TreeBranch = ({
 
 const FamilyTree = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set(["magdeline"]));
-  const { user, loading } = useAuth();
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null);
+  
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!authLoading && !user) {
       navigate("/login");
     }
-  }, [user, loading, navigate]);
+  }, [user, authLoading, navigate]);
+
+  useEffect(() => {
+    loadFamilyMembers();
+  }, []);
+
+  const loadFamilyMembers = async () => {
+    const { data, error } = await supabase
+      .from("family_members")
+      .select("*")
+      .order("generation_level", { ascending: true });
+    
+    if (!error && data) {
+      setFamilyMembers(data);
+      // Expand root by default
+      const root = data.find(m => m.generation_level === 0);
+      if (root) {
+        setExpandedNodes(new Set([root.id]));
+      }
+    }
+    setLoading(false);
+  };
 
   const toggleNode = (id: string) => {
     setExpandedNodes((prev) => {
@@ -448,25 +241,38 @@ const FamilyTree = () => {
   };
 
   const expandAll = () => {
-    const getAllIds = (member: FamilyMember): string[] => {
-      const ids = [member.id];
-      if (member.children) {
-        member.children.forEach((child) => {
-          ids.push(...getAllIds(child));
-        });
-      }
-      return ids;
-    };
-    setExpandedNodes(new Set(getAllIds(familyTreeData)));
+    setExpandedNodes(new Set(familyMembers.map(m => m.id)));
   };
 
   const collapseAll = () => {
-    setExpandedNodes(new Set(["magdeline"]));
+    const root = familyMembers.find(m => m.generation_level === 0);
+    setExpandedNodes(root ? new Set([root.id]) : new Set());
   };
 
-  if (loading || !user) {
-    return null;
+  const rootMember = familyMembers.find(m => m.generation_level === 0);
+
+  const filteredMembers = searchQuery
+    ? familyMembers.filter(m => 
+        m.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.nickname && m.nickname.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : [];
+
+  // Stats
+  const totalMembers = familyMembers.length;
+  const maleCount = familyMembers.filter(m => m.gender === "male").length;
+  const femaleCount = familyMembers.filter(m => m.gender === "female").length;
+  const deceasedCount = familyMembers.filter(m => m.is_deceased).length;
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -491,7 +297,7 @@ const FamilyTree = () => {
                     <Link
                       to={item.href}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                        item.href === "/family-tree"
+                        item.active
                           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                           : ""
                       }`}
@@ -526,6 +332,7 @@ const FamilyTree = () => {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
+        {/* Header */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="flex items-center justify-between px-4 lg:px-8 h-16">
             <div className="flex items-center gap-4">
@@ -539,45 +346,118 @@ const FamilyTree = () => {
                 Family Tree
               </h1>
             </div>
+
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" onClick={expandAll}>
                 Expand All
               </Button>
               <Button variant="outline" size="sm" onClick={collapseAll}>
-                Collapse All
+                Collapse
               </Button>
             </div>
           </div>
         </header>
 
+        {/* Content */}
         <main className="flex-1 p-4 lg:p-8 overflow-auto">
-          {/* Legend */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 flex flex-wrap gap-4 justify-center"
-          >
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-amber-100 border-2 border-amber-300" />
-              <span className="text-sm text-muted-foreground">Female</span>
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-card rounded-xl p-4 border border-sage-100 text-center">
+              <p className="text-2xl font-bold text-foreground">{totalMembers}</p>
+              <p className="text-sm text-muted-foreground">Total Members</p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-300" />
-              <span className="text-sm text-muted-foreground">Male</span>
+            <div className="bg-blue-50 rounded-xl p-4 border border-blue-200 text-center">
+              <p className="text-2xl font-bold text-blue-700">{maleCount}</p>
+              <p className="text-sm text-blue-600">Male</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">✝ = Deceased</span>
+            <div className="bg-pink-50 rounded-xl p-4 border border-pink-200 text-center">
+              <p className="text-2xl font-bold text-pink-700">{femaleCount}</p>
+              <p className="text-sm text-pink-600">Female</p>
             </div>
-          </motion.div>
+            <div className="bg-purple-50 rounded-xl p-4 border border-purple-200 text-center">
+              <p className="text-2xl font-bold text-purple-700">{deceasedCount}</p>
+              <p className="text-sm text-purple-600">Angels ✝</p>
+            </div>
+          </div>
 
-          {/* Family Tree */}
+          {/* Search */}
+          <div className="relative max-w-md mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search family members..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Search Results */}
+          {searchQuery && (
+            <div className="mb-6">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">
+                Search Results ({filteredMembers.length})
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {filteredMembers.map((member) => (
+                  <button
+                    key={member.id}
+                    onClick={() => {
+                      // Expand path to this member
+                      const path = new Set<string>();
+                      let current: FamilyMember | undefined = member;
+                      while (current) {
+                        path.add(current.id);
+                        current = familyMembers.find(m => m.id === current?.parent_id);
+                      }
+                      setExpandedNodes(prev => new Set([...prev, ...path]));
+                      setSearchQuery("");
+                    }}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      member.gender === "male" 
+                        ? "bg-blue-100 text-blue-800 hover:bg-blue-200" 
+                        : "bg-pink-100 text-pink-800 hover:bg-pink-200"
+                    } ${member.is_deceased ? "opacity-60" : ""}`}
+                  >
+                    {member.full_name}
+                    {member.is_deceased && " ✝"}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Legend */}
+          <div className="flex flex-wrap gap-4 mb-6 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-400" />
+              <span className="text-muted-foreground">Male</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-pink-100 border-2 border-pink-400" />
+              <span className="text-muted-foreground">Female</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded bg-purple-100 border-2 border-purple-300" />
+              <span className="text-muted-foreground">Angels (Deceased)</span>
+            </div>
+          </div>
+
+          {/* Tree */}
           <div className="overflow-x-auto pb-8">
-            <div className="min-w-[800px] flex justify-center">
-              <TreeBranch 
-                member={familyTreeData}
-                expandedNodes={expandedNodes}
-                toggleNode={toggleNode}
-              />
+            <div className="min-w-max flex justify-center">
+              {rootMember ? (
+                <TreeBranch
+                  member={rootMember}
+                  allMembers={familyMembers}
+                  expandedNodes={expandedNodes}
+                  toggleNode={toggleNode}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <GitBranch className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">No family members found</p>
+                </div>
+              )}
             </div>
           </div>
         </main>
