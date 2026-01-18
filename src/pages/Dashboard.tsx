@@ -30,6 +30,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Sidebar navigation items
 const navItems = [
@@ -42,34 +43,18 @@ const navItems = [
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
-// Mock announcements
-const announcements = [
-  {
-    type: "birthday",
-    icon: Cake,
-    title: "Lerato's Birthday",
-    description: "Turning 25 tomorrow!",
-    date: "Tomorrow",
-  },
-  {
-    type: "event",
-    icon: Calendar,
-    title: "Annual Family Reunion",
-    description: "Planning meeting this Saturday",
-    date: "Jan 20",
-  },
-  {
-    type: "visit",
-    icon: MapPin,
-    title: "Uncle John visiting",
-    description: "Arriving from Cape Town",
-    date: "Jan 22",
-  },
-];
+interface Announcement {
+  id: string;
+  title: string;
+  description: string;
+  event_date: string | null;
+  location: string | null;
+  announcement_type: string;
+}
 
 // Mock family stats
 const familyStats = [
-  { icon: Users, label: "Family Members", value: "156" },
+  { icon: Users, label: "Family Members", value: "80+" },
   { icon: BookHeart, label: "Stories Shared", value: "89" },
   { icon: Heart, label: "Connections Made", value: "234" },
 ];
@@ -77,6 +62,7 @@ const familyStats = [
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   
   const { user, profile, loading, signOut } = useAuth();
   const { toast } = useToast();
@@ -89,6 +75,18 @@ const Dashboard = () => {
     }
   }, [user, loading, navigate]);
 
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      const { data } = await supabase
+        .from("announcements")
+        .select("*")
+        .eq("is_active", true)
+        .order("event_date", { ascending: true });
+      if (data) setAnnouncements(data);
+    };
+    fetchAnnouncements();
+  }, []);
+
   const handleSignOut = async () => {
     await signOut();
     toast({
@@ -96,6 +94,15 @@ const Dashboard = () => {
       description: "You have been signed out successfully.",
     });
     navigate("/");
+  };
+
+  const getAnnouncementIcon = (type: string) => {
+    return type === "birthday" ? Cake : Calendar;
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   };
 
   // Show loading while checking auth

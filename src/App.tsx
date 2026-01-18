@@ -14,6 +14,7 @@ import Games from "./pages/Games";
 import Resources from "./pages/Resources";
 import Library from "./pages/Library";
 import Maggie from "./pages/Maggie";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/library" element={<Library />} />
             <Route path="/maggie" element={<Maggie />} />
+            <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

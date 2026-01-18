@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          announcement_type: string
+          created_at: string
+          description: string
+          event_date: string | null
+          event_end_date: string | null
+          id: string
+          is_active: boolean
+          location: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          announcement_type?: string
+          created_at?: string
+          description: string
+          event_date?: string | null
+          event_end_date?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          announcement_type?: string
+          created_at?: string
+          description?: string
+          event_date?: string | null
+          event_end_date?: string | null
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversation_messages: {
         Row: {
           content: string
@@ -157,6 +196,8 @@ export type Database = {
           id: string
           location: string | null
           occupation: string | null
+          phone_number: string | null
+          services: string[] | null
           updated_at: string
           user_id: string
         }
@@ -170,6 +211,8 @@ export type Database = {
           id?: string
           location?: string | null
           occupation?: string | null
+          phone_number?: string | null
+          services?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -183,6 +226,8 @@ export type Database = {
           id?: string
           location?: string | null
           occupation?: string | null
+          phone_number?: string | null
+          services?: string[] | null
           updated_at?: string
           user_id?: string
         }
