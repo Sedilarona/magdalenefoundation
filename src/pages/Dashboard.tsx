@@ -334,26 +334,49 @@ const Dashboard = () => {
                 </h3>
               </div>
               <div className="p-4 space-y-3">
-                {announcements.map((announcement, index) => (
-                  <motion.div
-                    key={announcement.title}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + index * 0.1 }}
-                    className="flex items-start gap-4 p-4 bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors cursor-pointer"
-                  >
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <announcement.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-foreground">{announcement.title}</h4>
-                      <p className="text-sm text-muted-foreground">{announcement.description}</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground whitespace-nowrap">
-                      {announcement.date}
-                    </span>
-                  </motion.div>
-                ))}
+                {announcements.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-6">
+                    No announcements yet.
+                  </p>
+                )}
+                {announcements.map((announcement, index) => {
+                  const Icon = getAnnouncementIcon(announcement.announcement_type);
+                  const dateLabel = announcement.event_date
+                    ? new Date(announcement.event_date).toLocaleDateString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "";
+                  return (
+                    <motion.div
+                      key={announcement.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.3 + index * 0.1 }}
+                      className="flex items-start gap-4 p-4 bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-5 h-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium text-foreground">{announcement.title}</h4>
+                        <p className="text-sm text-muted-foreground">{announcement.description}</p>
+                        {announcement.location && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {announcement.location}
+                          </p>
+                        )}
+                      </div>
+                      {dateLabel && (
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {dateLabel}
+                        </span>
+                      )}
+                    </motion.div>
+                  );
+                })}
               </div>
               <div className="p-4 border-t border-border">
                 <Button variant="ghost" className="w-full">
