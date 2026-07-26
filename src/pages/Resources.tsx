@@ -183,7 +183,7 @@ const Resources = () => {
       .from("scripture_content")
       .select("*")
       .eq("book_id", bookId)
-      .order("chapter_number", { ascending: true });
+      .order("created_at", { ascending: true });
     
     if (!error && data) {
       setScriptures(data as ScriptureContent[]);
