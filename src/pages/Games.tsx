@@ -239,6 +239,7 @@ const Games = () => {
                     className="w-full gap-2" 
                     variant={game.available ? "default" : "secondary"}
                     disabled={!game.available}
+                    onClick={() => game.available && navigate(game.route)}
                   >
                     {game.available ? (
                       <>
