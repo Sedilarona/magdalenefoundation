@@ -183,7 +183,8 @@ const Resources = () => {
       .from("scripture_content")
       .select("*")
       .eq("book_id", bookId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .limit(2000);
     
     if (!error && data) {
       setScriptures(data as ScriptureContent[]);
