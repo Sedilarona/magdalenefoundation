@@ -16,6 +16,15 @@ import Library from "./pages/Library";
 import Maggie from "./pages/Maggie";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import Crossword from "./games/Crossword";
+import BibleTrivia from "./games/BibleTrivia";
+import FamilyTrivia from "./games/FamilyTrivia";
+import Ludo from "./games/Ludo";
+import SnakesLadders from "./games/SnakesLadders";
+import Chess from "./games/Chess";
+import Crazy8 from "./games/Crazy8";
+import Rummy from "./games/Rummy";
+import FamilyPuzzle from "./games/FamilyPuzzle";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +43,15 @@ const App = () => (
             <Route path="/family-tree" element={<FamilyTree />} />
             <Route path="/tales" element={<Tales />} />
             <Route path="/games" element={<Games />} />
+            <Route path="/games/crossword" element={<Crossword />} />
+            <Route path="/games/bible-trivia" element={<BibleTrivia />} />
+            <Route path="/games/family-trivia" element={<FamilyTrivia />} />
+            <Route path="/games/ludo" element={<Ludo />} />
+            <Route path="/games/snakes-ladders" element={<SnakesLadders />} />
+            <Route path="/games/chess" element={<Chess />} />
+            <Route path="/games/crazy-8" element={<Crazy8 />} />
+            <Route path="/games/rummy" element={<Rummy />} />
+            <Route path="/games/family-puzzle" element={<FamilyPuzzle />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/library" element={<Library />} />
             <Route path="/maggie" element={<Maggie />} />
