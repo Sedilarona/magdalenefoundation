@@ -4,16 +4,11 @@ import { Menu, X, User, LogIn } from "lucide-react";
 import { Logo } from "./Logo";
 import { Button } from "./ui/button";
 import { Link } from "react-router-dom";
+import { FaqDialog } from "./FaqDialog";
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navItems = [
-    { label: "Home", href: "/" },
-    { label: "About", href: "/about" },
-    { label: "Features", href: "/features" },
-    { label: "Contact", href: "/contact" },
-  ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -23,21 +18,9 @@ export const Header = () => {
             <Logo size="md" />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navItems.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="text-muted-foreground hover:text-foreground transition-colors font-body text-sm font-medium"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <FaqDialog />
             <Button variant="ghost" size="sm" asChild>
               <Link to="/login">
                 <LogIn className="w-4 h-4 mr-2" />
@@ -51,6 +34,7 @@ export const Header = () => {
               </Link>
             </Button>
           </div>
+
 
           {/* Mobile Menu Toggle */}
           <button
@@ -73,17 +57,9 @@ export const Header = () => {
             className="md:hidden bg-background border-b border-border overflow-hidden"
           >
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="py-3 px-4 text-foreground hover:bg-sage-50 rounded-lg transition-colors font-body"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              <div className="px-1"><FaqDialog /></div>
               <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-border">
+
                 <Button variant="outline" asChild>
                   <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                     <LogIn className="w-4 h-4 mr-2" />
