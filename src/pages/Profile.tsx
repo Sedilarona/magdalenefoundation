@@ -31,6 +31,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const GENERATIONS = [
+  "1st Generation (Founders)",
+  "2nd Generation (Children)",
+  "3rd Generation (Grandchildren)",
+  "4th Generation (Great-grandchildren)",
+  "5th Generation (Great-great-grandchildren)",
+];
+
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -53,6 +63,7 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
+
 
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
