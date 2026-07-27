@@ -20,15 +20,18 @@ export const Hero = () => {
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Tagline */}
+          {/* Tagline / Motto */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-sage-700 font-display italic text-lg md:text-xl mb-6"
+            className="text-sage-700 font-display italic text-base md:text-xl mb-6 leading-relaxed"
           >
-            Sethare se segologolo, Sethare sa maungo a monate, Sethare se moriti o tsididi
+            "Sethare se segologolo, Sethare se setona,
+            <br className="hidden sm:block" />
+            {" "}Sethare Moriti o tsidididi, Sethare se maungo a monate…"
           </motion.p>
+
 
           {/* Main Heading */}
           <motion.h1

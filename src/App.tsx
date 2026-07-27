@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -15,7 +16,9 @@ import Resources from "./pages/Resources";
 import Library from "./pages/Library";
 import Maggie from "./pages/Maggie";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+
 import Crossword from "./games/Crossword";
 import BibleTrivia from "./games/BibleTrivia";
 import FamilyTrivia from "./games/FamilyTrivia";
@@ -30,10 +33,12 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
       <BrowserRouter>
+
         <AuthProvider>
           <Routes>
             <Route path="/" element={<Index />} />
@@ -56,13 +61,16 @@ const App = () => (
             <Route path="/library" element={<Library />} />
             <Route path="/maggie" element={<Maggie />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
+
 );
 
 export default App;

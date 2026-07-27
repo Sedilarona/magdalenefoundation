@@ -31,6 +31,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const GENERATIONS = [
+  "1st Generation (Founders)",
+  "2nd Generation (Children)",
+  "3rd Generation (Grandchildren)",
+  "4th Generation (Great-grandchildren)",
+  "5th Generation (Great-great-grandchildren)",
+];
+
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -49,10 +59,11 @@ const Profile = () => {
   const [generation, setGeneration] = useState("");
   const [location, setLocation] = useState("");
   const [occupation, setOccupation] = useState("");
-  const [bio, setBio] = useState("");
+  
   const [phoneNumber, setPhoneNumber] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
+
 
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
@@ -70,7 +81,7 @@ const Profile = () => {
       setGeneration(profile.generation || "");
       setLocation(profile.location || "");
       setOccupation(profile.occupation || "");
-      setBio(profile.bio || "");
+      // bio removed
       // Fetch additional fields
       fetchProfileDetails();
     }
@@ -103,7 +114,7 @@ const Profile = () => {
           generation,
           location,
           occupation,
-          bio,
+          
           phone_number: phoneNumber,
           services,
           updated_at: new Date().toISOString(),
@@ -287,13 +298,18 @@ const Profile = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="generation">Generation</Label>
-                  <Input
-                    id="generation"
-                    value={generation}
-                    onChange={(e) => setGeneration(e.target.value)}
-                    placeholder="e.g., 3rd Generation"
-                  />
+                  <Select value={generation} onValueChange={setGeneration}>
+                    <SelectTrigger id="generation">
+                      <SelectValue placeholder="Select your generation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GENERATIONS.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
@@ -337,16 +353,8 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    rows={4}
-                  />
-                </div>
+
+
               </div>
             </motion.div>
 
