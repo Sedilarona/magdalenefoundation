@@ -59,7 +59,7 @@ const Profile = () => {
   const [generation, setGeneration] = useState("");
   const [location, setLocation] = useState("");
   const [occupation, setOccupation] = useState("");
-  const [bio, setBio] = useState("");
+  const [phoneNumberDup, setPhoneNumberDup] = useState(""); // deprecated, kept out
   const [phoneNumber, setPhoneNumber] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
