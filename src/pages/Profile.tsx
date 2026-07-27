@@ -59,7 +59,7 @@ const Profile = () => {
   const [generation, setGeneration] = useState("");
   const [location, setLocation] = useState("");
   const [occupation, setOccupation] = useState("");
-  const [phoneNumberDup, setPhoneNumberDup] = useState(""); // deprecated, kept out
+  
   const [phoneNumber, setPhoneNumber] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
@@ -81,7 +81,7 @@ const Profile = () => {
       setGeneration(profile.generation || "");
       setLocation(profile.location || "");
       setOccupation(profile.occupation || "");
-      setBio(profile.bio || "");
+      // bio removed
       // Fetch additional fields
       fetchProfileDetails();
     }
@@ -114,7 +114,7 @@ const Profile = () => {
           generation,
           location,
           occupation,
-          bio,
+          
           phone_number: phoneNumber,
           services,
           updated_at: new Date().toISOString(),
@@ -348,16 +348,8 @@ const Profile = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">Bio</Label>
-                  <Textarea
-                    id="bio"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself..."
-                    rows={4}
-                  />
-                </div>
+
+
               </div>
             </motion.div>
 
