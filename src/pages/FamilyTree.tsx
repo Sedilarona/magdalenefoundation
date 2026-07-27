@@ -45,8 +45,21 @@ interface FamilyMember {
   occupation: string | null;
   parent_id: string | null;
   spouse_id: string | null;
+  sibling_order?: number | null;
+  birth_month?: number | null;
+  birth_day?: number | null;
   children?: FamilyMember[];
 }
+
+const sortSiblings = (a: FamilyMember, b: FamilyMember) => {
+  const ao = a.sibling_order ?? 9999;
+  const bo = b.sibling_order ?? 9999;
+  if (ao !== bo) return ao - bo;
+  const ay = parseInt(a.birth_year || "") || 9999;
+  const by = parseInt(b.birth_year || "") || 9999;
+  if (ay !== by) return ay - by;
+  return a.full_name.localeCompare(b.full_name);
+};
 
 const MemberNode = ({ 
   member, 
@@ -118,7 +131,7 @@ const TreeBranch = ({
   toggleNode: (id: string) => void;
 }) => {
   const isExpanded = expandedNodes.has(member.id);
-  const children = allMembers.filter(m => m.parent_id === member.id);
+  const children = allMembers.filter(m => m.parent_id === member.id).sort(sortSiblings);
   const hasChildren = children.length > 0;
   
   // Find spouse

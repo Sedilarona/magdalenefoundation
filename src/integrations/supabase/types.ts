@@ -80,6 +80,8 @@ export type Database = {
       family_members: {
         Row: {
           bio: string | null
+          birth_day: number | null
+          birth_month: number | null
           birth_year: string | null
           created_at: string
           death_year: string | null
@@ -92,12 +94,15 @@ export type Database = {
           nickname: string | null
           occupation: string | null
           parent_id: string | null
+          sibling_order: number | null
           spouse_id: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
           birth_year?: string | null
           created_at?: string
           death_year?: string | null
@@ -110,12 +115,15 @@ export type Database = {
           nickname?: string | null
           occupation?: string | null
           parent_id?: string | null
+          sibling_order?: number | null
           spouse_id?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
           birth_year?: string | null
           created_at?: string
           death_year?: string | null
@@ -128,6 +136,7 @@ export type Database = {
           nickname?: string | null
           occupation?: string | null
           parent_id?: string | null
+          sibling_order?: number | null
           spouse_id?: string | null
           updated_at?: string
           user_id?: string | null

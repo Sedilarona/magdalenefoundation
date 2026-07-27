@@ -3,8 +3,7 @@ import { GameShell } from "./GameShell";
 import { Button } from "@/components/ui/button";
 import { Check, RotateCcw } from "lucide-react";
 
-// Small 5-word crossword with Botswana + family theme
-// Grid 9x9; empty cells are null
+// Family + Botswana themed crossword
 type Cell = { letter: string; row: number; col: number; wordIds: string[]; num?: number };
 
 interface WordDef {
@@ -14,18 +13,19 @@ interface WordDef {
   row: number;
   col: number;
   dir: "across" | "down";
-  num: number;
+  num?: number;
 }
 
 const WORDS: WordDef[] = [
-  { id: "1a", answer: "GABORONE", clue: "Capital city of Botswana", row: 0, col: 0, dir: "across", num: 1 },
-  { id: "2d", answer: "BOTSWANA", clue: "Our beloved country", row: 0, col: 2, dir: "down", num: 2 },
-  { id: "3a", answer: "TSWANA", clue: "The main language spoken", row: 4, col: 2, dir: "across", num: 3 },
-  { id: "4d", answer: "SEROWE", clue: "Historic village in Central District", row: 2, col: 5, dir: "down", num: 4 },
-  { id: "5a", answer: "PULA", clue: "Botswana's currency (means rain)", row: 7, col: 1, dir: "across", num: 5 },
+  { id: "w1", answer: "MAGDELINE", clue: "First name of our family matriarch", row: 0, col: 0, dir: "down" },
+  { id: "w2", answer: "PULA", clue: "Botswana's currency (also means rain)", row: 0, col: 4, dir: "across" },
+  { id: "w3", answer: "GABORONE", clue: "Capital city of Botswana", row: 2, col: 0, dir: "across" },
+  { id: "w4", answer: "BOTSWANA", clue: "Our beloved country", row: 2, col: 2, dir: "down" },
+  { id: "w5", answer: "SETSWANA", clue: "The national language of Botswana", row: 5, col: 2, dir: "across" },
+  { id: "w6", answer: "POANE", clue: "A shared family surname", row: 7, col: 5, dir: "across" },
 ];
 
-const GRID_SIZE = 9;
+const GRID_SIZE = 10;
 
 const buildGrid = () => {
   const grid: (Cell | null)[][] = Array.from({ length: GRID_SIZE }, () =>
@@ -44,11 +44,26 @@ const buildGrid = () => {
       }
     }
   });
-  // number the start cells
-  WORDS.forEach((w) => {
-    const cell = grid[w.row][w.col];
-    if (cell) cell.num = w.num;
-  });
+  // Number starting cells in reading order
+  let num = 1;
+  const numbered = new Map<string, number>();
+  for (let r = 0; r < GRID_SIZE; r++) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = grid[r][c];
+      if (!cell) continue;
+      const starts = WORDS.some((w) => w.row === r && w.col === c);
+      if (starts) {
+        cell.num = num;
+        WORDS.forEach((w) => {
+          if (w.row === r && w.col === c) {
+            w.num = num;
+            numbered.set(w.id, num);
+          }
+        });
+        num++;
+      }
+    }
+  }
   return grid;
 };
 
@@ -69,15 +84,15 @@ const Crossword = () => {
   );
 
   return (
-    <GameShell title="Botswana Crossword" subtitle="Fill in the answers based on the clues">
+    <GameShell title="Family & Botswana Crossword" subtitle="Fill in the answers based on the clues">
       <div className="grid lg:grid-cols-[auto_1fr] gap-6">
         <div className="bg-card rounded-2xl border border-sage-100 shadow-card p-4 mx-auto">
           <div
             className="grid gap-0.5"
-            style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 2.5rem)` }}
+            style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 2.25rem)` }}
           >
             {grid.flat().map((cell, i) => {
-              if (!cell) return <div key={i} className="w-10 h-10 bg-transparent" />;
+              if (!cell) return <div key={i} className="w-9 h-9 bg-transparent" />;
               const key = `${cell.row}-${cell.col}`;
               const val = answers[key] || "";
               const correct = checked && val === cell.letter;
@@ -85,7 +100,7 @@ const Crossword = () => {
               return (
                 <div key={i} className="relative">
                   {cell.num && (
-                    <span className="absolute top-0 left-0.5 text-[9px] font-bold text-muted-foreground pointer-events-none">
+                    <span className="absolute top-0 left-0.5 text-[9px] font-bold text-muted-foreground pointer-events-none z-10">
                       {cell.num}
                     </span>
                   )}
@@ -93,7 +108,7 @@ const Crossword = () => {
                     value={val}
                     onChange={(e) => setLetter(cell.row, cell.col, e.target.value)}
                     maxLength={1}
-                    className={`w-10 h-10 text-center font-bold uppercase border-2 rounded ${
+                    className={`w-9 h-9 text-center font-bold uppercase border-2 rounded ${
                       correct ? "border-green-500 bg-green-50 text-green-900"
                       : wrong ? "border-red-500 bg-red-50 text-red-900"
                       : "border-sage-200 bg-white text-foreground focus:border-primary focus:outline-none"
@@ -116,7 +131,7 @@ const Crossword = () => {
           <div>
             <h3 className="font-display font-semibold mb-2">Across</h3>
             <ul className="space-y-2 text-sm">
-              {WORDS.filter((w) => w.dir === "across").map((w) => (
+              {WORDS.filter((w) => w.dir === "across").sort((a, b) => (a.num ?? 0) - (b.num ?? 0)).map((w) => (
                 <li key={w.id}><span className="font-bold">{w.num}.</span> {w.clue} <span className="text-muted-foreground">({w.answer.length})</span></li>
               ))}
             </ul>
@@ -124,7 +139,7 @@ const Crossword = () => {
           <div>
             <h3 className="font-display font-semibold mb-2">Down</h3>
             <ul className="space-y-2 text-sm">
-              {WORDS.filter((w) => w.dir === "down").map((w) => (
+              {WORDS.filter((w) => w.dir === "down").sort((a, b) => (a.num ?? 0) - (b.num ?? 0)).map((w) => (
                 <li key={w.id}><span className="font-bold">{w.num}.</span> {w.clue} <span className="text-muted-foreground">({w.answer.length})</span></li>
               ))}
             </ul>
