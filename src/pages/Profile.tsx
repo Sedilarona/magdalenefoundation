@@ -298,13 +298,18 @@ const Profile = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="generation">Generation</Label>
-                  <Input
-                    id="generation"
-                    value={generation}
-                    onChange={(e) => setGeneration(e.target.value)}
-                    placeholder="e.g., 3rd Generation"
-                  />
+                  <Select value={generation} onValueChange={setGeneration}>
+                    <SelectTrigger id="generation">
+                      <SelectValue placeholder="Select your generation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {GENERATIONS.map((g) => (
+                        <SelectItem key={g} value={g}>{g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
