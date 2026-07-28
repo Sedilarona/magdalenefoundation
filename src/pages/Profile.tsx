@@ -408,28 +408,6 @@ const Profile = () => {
               </div>
             </motion.div>
 
-            {/* MAGGIE Sync Info */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-gradient-to-r from-sage-100 to-earth-100 rounded-2xl p-6 mt-6 border border-sage-200"
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-display font-semibold text-foreground mb-1">
-                    Synced with MAGGIE
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your profile information is automatically synced with MAGGIE, the family AI assistant. 
-                    MAGGIE can help family members find your services and connect with you.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
           </div>
         </main>
       </div>

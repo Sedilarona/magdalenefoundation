@@ -194,12 +194,49 @@ export type Database = {
         }
         Relationships: []
       }
+      media_uploads: {
+        Row: {
+          caption: string | null
+          category: string
+          created_at: string
+          file_name: string
+          file_size: number | null
+          file_type: string
+          id: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          category: string
+          created_at?: string
+          file_name: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          category?: string
+          created_at?: string
+          file_name?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
           bio: string | null
           contribution_points: number | null
           created_at: string
+          family_branch: string | null
           full_name: string
           generation: string | null
           id: string
@@ -215,6 +252,7 @@ export type Database = {
           bio?: string | null
           contribution_points?: number | null
           created_at?: string
+          family_branch?: string | null
           full_name: string
           generation?: string | null
           id?: string
@@ -230,6 +268,7 @@ export type Database = {
           bio?: string | null
           contribution_points?: number | null
           created_at?: string
+          family_branch?: string | null
           full_name?: string
           generation?: string | null
           id?: string

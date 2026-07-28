@@ -183,11 +183,19 @@ const Resources = () => {
       .from("scripture_content")
       .select("*")
       .eq("book_id", bookId)
-      .order("created_at", { ascending: true })
+      .order("section_title", { ascending: true, nullsFirst: false })
+      .order("chapter_number", { ascending: true })
       .limit(2000);
-    
+
     if (!error && data) {
-      setScriptures(data as ScriptureContent[]);
+      // Alphabetical by book name (section_title contains e.g. "Genesis 1")
+      const sorted = [...data].sort((a: any, b: any) => {
+        const na = (a.section_title || "").replace(/\s+\d+.*$/, "").toLowerCase();
+        const nb = (b.section_title || "").replace(/\s+\d+.*$/, "").toLowerCase();
+        if (na !== nb) return na.localeCompare(nb);
+        return (a.chapter_number ?? 0) - (b.chapter_number ?? 0);
+      });
+      setScriptures(sorted as ScriptureContent[]);
     }
     setLoadingScriptures(false);
   };

@@ -1,13 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, GitBranch } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const FAMILY_BRANCHES = [
+  "Teko Mazile (branch)",
+  "Mmasane Bodilenyane (branch)",
+  "Onkgopotse Boy Bodilenyane (branch)",
+  "Sechele Bodilenyane (branch)",
+  "Masego Bodilenyane (branch)",
+  "Thuso Bodilenyane (branch)",
+  "Letsogile 'Stanley' Bodilenyane (branch)",
+  "Stanley Poane (branch)",
+  "Magdeline Bodilenyane (branch)",
+  "Other / Extended family",
+];
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +31,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    familyBranch: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   
@@ -32,40 +48,42 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.fullName || !formData.email || !formData.password) {
+
+    if (!formData.fullName || !formData.email || !formData.password || !formData.familyBranch) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields including your family branch.",
         variant: "destructive",
       });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
+      toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" });
       return;
     }
 
     if (formData.password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
-        variant: "destructive",
-      });
+      toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
-    
+
     const { error } = await signUp(formData.email, formData.password, formData.fullName);
-    
+
+    if (!error) {
+      // Persist branch selection onto the profile once it exists
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("profiles").update({ family_branch: formData.familyBranch }).eq("user_id", user.id);
+        }
+      } catch (_) {}
+    }
+
     setIsLoading(false);
-    
+
     if (error) {
       toast({
         title: "Registration failed",
@@ -75,10 +93,7 @@ const Register = () => {
         variant: "destructive",
       });
     } else {
-      toast({
-        title: "Welcome to the family!",
-        description: "Your account has been created successfully.",
-      });
+      toast({ title: "Welcome to the family!", description: "Your account has been created successfully." });
       navigate("/dashboard");
     }
   };
@@ -123,6 +138,27 @@ const Register = () => {
                 />
               </div>
             </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="familyBranch" className="text-foreground">Family Branch</Label>
+              <Select
+                value={formData.familyBranch}
+                onValueChange={(v) => setFormData((p) => ({ ...p, familyBranch: v }))}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="familyBranch" className="h-12 bg-card border-sage-200">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select the branch you belong to" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {FAMILY_BRANCHES.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Registration is limited to Magdalene family members and descendants.</p>
+            </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground">

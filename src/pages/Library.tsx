@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -27,10 +27,14 @@ import {
   Loader2,
   Image as ImageIcon,
   Plus,
+  Play,
+  Trash2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -122,15 +126,74 @@ const Library = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState<PhotoCategory | null>(null);
-  
+  const [items, setItems] = useState<Array<{ id: string; url: string; file_name: string; file_type: string; user_id: string; storage_path: string }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
+    if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (selectedCategory) loadMedia(selectedCategory.id);
+    else setItems([]);
+  }, [selectedCategory]);
+
+  const loadMedia = async (category: string) => {
+    const { data } = await supabase
+      .from("media_uploads")
+      .select("*")
+      .eq("category", category)
+      .order("created_at", { ascending: false });
+    if (!data) return setItems([]);
+    const enriched = await Promise.all(data.map(async (r: any) => {
+      const { data: signed } = await supabase.storage.from("family-media").createSignedUrl(r.storage_path, 3600);
+      return { id: r.id, url: signed?.signedUrl ?? "", file_name: r.file_name, file_type: r.file_type, user_id: r.user_id, storage_path: r.storage_path };
+    }));
+    setItems(enriched);
+  };
+
+  const onUpload = async (files: FileList | null) => {
+    if (!files || !user || !selectedCategory) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const path = `${user.id}/${selectedCategory.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error: upErr } = await supabase.storage.from("family-media").upload(path, file, { contentType: file.type });
+        if (upErr) throw upErr;
+        const { error: dbErr } = await supabase.from("media_uploads").insert({
+          user_id: user.id,
+          category: selectedCategory.id,
+          storage_path: path,
+          file_name: file.name,
+          file_type: file.type || "application/octet-stream",
+          file_size: file.size,
+        });
+        if (dbErr) throw dbErr;
+      }
+      toast({ title: "Uploaded", description: `${files.length} file(s) added to ${selectedCategory.title}.` });
+      loadMedia(selectedCategory.id);
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeItem = async (id: string, storage_path: string, ownerId: string) => {
+    if (!user || ownerId !== user.id) {
+      toast({ title: "Not allowed", description: "You can only delete your own uploads.", variant: "destructive" });
+      return;
+    }
+    await supabase.storage.from("family-media").remove([storage_path]);
+    await supabase.from("media_uploads").delete().eq("id", id);
+    setItems((it) => it.filter((i) => i.id !== id));
+  };
 
   if (loading) {
     return (
@@ -273,9 +336,9 @@ const Library = () => {
                   </div>
                 </div>
 
-                <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" onClick={() => setSelectedCategory(photoCategories[7])}>
                   <Upload className="w-4 h-4" />
-                  Upload Photos
+                  Go to General Photos
                 </Button>
               </motion.div>
 
@@ -343,21 +406,55 @@ const Library = () => {
                 </div>
               </div>
 
-              {/* Empty State */}
-              <div className="text-center py-16 bg-sage-50 rounded-2xl">
-                <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                  No photos yet
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Be the first to add photos to {selectedCategory.title.toLowerCase()}. 
-                  Share your memories with the family!
-                </p>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Photos
+              {/* Upload */}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                className="hidden"
+                onChange={(e) => onUpload(e.target.files)}
+              />
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2">
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {uploading ? "Uploading..." : "Add Photos / Videos"}
                 </Button>
               </div>
+
+              {items.length === 0 ? (
+                <div className="text-center py-16 bg-sage-50 rounded-2xl">
+                  <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-2">No media yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Be the first to add photos or videos to {selectedCategory.title.toLowerCase()}.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {items.map((it) => (
+                    <div key={it.id} className="relative group aspect-square rounded-xl overflow-hidden bg-sage-100 border border-sage-200">
+                      {it.file_type.startsWith("video/") ? (
+                        <>
+                          <video src={it.url} controls className="w-full h-full object-cover" />
+                          <Play className="absolute top-2 left-2 w-4 h-4 text-primary-foreground drop-shadow" />
+                        </>
+                      ) : (
+                        <img src={it.url} alt={it.file_name} className="w-full h-full object-cover" />
+                      )}
+                      {user?.id === it.user_id && (
+                        <button
+                          onClick={() => removeItem(it.id, it.storage_path, it.user_id)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
