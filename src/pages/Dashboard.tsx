@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -474,6 +475,44 @@ const Dashboard = () => {
           </motion.div>
         </main>
       </div>
+
+      {/* Notifications Sheet */}
+      <Sheet open={notifOpen} onOpenChange={setNotifOpen}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" /> Announcements
+            </SheetTitle>
+          </SheetHeader>
+          <div className="mt-6 space-y-3">
+            {announcements.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-6">No announcements yet.</p>
+            )}
+            {announcements.map((a) => {
+              const Icon = getAnnouncementIcon(a.announcement_type);
+              return (
+                <div key={a.id} className="flex items-start gap-3 p-3 bg-sage-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-foreground text-sm">{a.title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
+                    {a.event_date && (
+                      <p className="text-xs text-muted-foreground mt-1">{formatDate(a.event_date)}</p>
+                    )}
+                    {a.location && (
+                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                        <MapPin className="w-3 h-3" /> {a.location}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
