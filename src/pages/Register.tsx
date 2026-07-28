@@ -48,40 +48,42 @@ const Register = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.fullName || !formData.email || !formData.password) {
+
+    if (!formData.fullName || !formData.email || !formData.password || !formData.familyBranch) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields including your family branch.",
         variant: "destructive",
       });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match.",
-        variant: "destructive",
-      });
+      toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" });
       return;
     }
 
     if (formData.password.length < 6) {
-      toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters.",
-        variant: "destructive",
-      });
+      toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
-    
+
     const { error } = await signUp(formData.email, formData.password, formData.fullName);
-    
+
+    if (!error) {
+      // Persist branch selection onto the profile once it exists
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("profiles").update({ family_branch: formData.familyBranch }).eq("user_id", user.id);
+        }
+      } catch (_) {}
+    }
+
     setIsLoading(false);
-    
+
     if (error) {
       toast({
         title: "Registration failed",
@@ -91,10 +93,7 @@ const Register = () => {
         variant: "destructive",
       });
     } else {
-      toast({
-        title: "Welcome to the family!",
-        description: "Your account has been created successfully.",
-      });
+      toast({ title: "Welcome to the family!", description: "Your account has been created successfully." });
       navigate("/dashboard");
     }
   };
