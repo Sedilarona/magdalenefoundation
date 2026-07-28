@@ -336,9 +336,9 @@ const Library = () => {
                   </div>
                 </div>
 
-                <Button variant="secondary" className="gap-2">
+                <Button variant="secondary" className="gap-2" onClick={() => setSelectedCategory(photoCategories[7])}>
                   <Upload className="w-4 h-4" />
-                  Upload Photos
+                  Go to General Photos
                 </Button>
               </motion.div>
 
@@ -406,21 +406,55 @@ const Library = () => {
                 </div>
               </div>
 
-              {/* Empty State */}
-              <div className="text-center py-16 bg-sage-50 rounded-2xl">
-                <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="font-display text-xl font-semibold text-foreground mb-2">
-                  No photos yet
-                </h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                  Be the first to add photos to {selectedCategory.title.toLowerCase()}. 
-                  Share your memories with the family!
-                </p>
-                <Button className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Add Photos
+              {/* Upload */}
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                className="hidden"
+                onChange={(e) => onUpload(e.target.files)}
+              />
+              <div className="flex justify-end mb-4">
+                <Button onClick={() => fileRef.current?.click()} disabled={uploading} className="gap-2">
+                  {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  {uploading ? "Uploading..." : "Add Photos / Videos"}
                 </Button>
               </div>
+
+              {items.length === 0 ? (
+                <div className="text-center py-16 bg-sage-50 rounded-2xl">
+                  <ImageIcon className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="font-display text-xl font-semibold text-foreground mb-2">No media yet</h3>
+                  <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                    Be the first to add photos or videos to {selectedCategory.title.toLowerCase()}.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {items.map((it) => (
+                    <div key={it.id} className="relative group aspect-square rounded-xl overflow-hidden bg-sage-100 border border-sage-200">
+                      {it.file_type.startsWith("video/") ? (
+                        <>
+                          <video src={it.url} controls className="w-full h-full object-cover" />
+                          <Play className="absolute top-2 left-2 w-4 h-4 text-primary-foreground drop-shadow" />
+                        </>
+                      ) : (
+                        <img src={it.url} alt={it.file_name} className="w-full h-full object-cover" />
+                      )}
+                      {user?.id === it.user_id && (
+                        <button
+                          onClick={() => removeItem(it.id, it.storage_path, it.user_id)}
+                          className="absolute top-2 right-2 p-1.5 rounded-full bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
