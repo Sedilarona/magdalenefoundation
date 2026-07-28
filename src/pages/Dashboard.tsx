@@ -62,6 +62,7 @@ const familyStats = [
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   
   const { user, profile, loading, signOut } = useAuth();
@@ -206,9 +207,15 @@ const Dashboard = () => {
 
             <div className="flex items-center gap-3">
               {/* Notifications */}
-              <button className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors">
+              <button
+                onClick={() => setNotifOpen(true)}
+                className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+                aria-label="Notifications"
+              >
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                {announcements.length > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
+                )}
               </button>
 
               {/* User Menu */}
@@ -444,12 +451,11 @@ const Dashboard = () => {
             <h3 className="font-display text-lg font-semibold text-foreground mb-4">
               Quick Actions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { icon: BookHeart, label: "Record a Story", href: "/tales/new" },
+                { icon: BookHeart, label: "Record a Story", href: "/tales" },
                 { icon: GitBranch, label: "View Family Tree", href: "/family-tree" },
                 { icon: Sparkles, label: "Ask MAGGIE", href: "/maggie" },
-                { icon: Users, label: "View Members", href: "/members" },
               ].map((action) => (
                 <Link
                   key={action.label}
