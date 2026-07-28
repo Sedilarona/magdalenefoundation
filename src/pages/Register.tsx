@@ -140,6 +140,27 @@ const Register = () => {
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="familyBranch" className="text-foreground">Family Branch</Label>
+              <Select
+                value={formData.familyBranch}
+                onValueChange={(v) => setFormData((p) => ({ ...p, familyBranch: v }))}
+                disabled={isLoading}
+              >
+                <SelectTrigger id="familyBranch" className="h-12 bg-card border-sage-200">
+                  <div className="flex items-center gap-2">
+                    <GitBranch className="w-4 h-4 text-muted-foreground" />
+                    <SelectValue placeholder="Select the branch you belong to" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {FAMILY_BRANCHES.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">Registration is limited to Magdalene family members and descendants.</p>
+            </div>
+
+
+            <div className="space-y-2">
               <Label htmlFor="email" className="text-foreground">
                 Email Address
               </Label>
