@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -27,10 +27,14 @@ import {
   Loader2,
   Image as ImageIcon,
   Plus,
+  Play,
+  Trash2,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -122,15 +126,74 @@ const Library = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedCategory, setSelectedCategory] = useState<PhotoCategory | null>(null);
-  
+  const [items, setItems] = useState<Array<{ id: string; url: string; file_name: string; file_type: string; user_id: string; storage_path: string }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
+    if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (selectedCategory) loadMedia(selectedCategory.id);
+    else setItems([]);
+  }, [selectedCategory]);
+
+  const loadMedia = async (category: string) => {
+    const { data } = await supabase
+      .from("media_uploads")
+      .select("*")
+      .eq("category", category)
+      .order("created_at", { ascending: false });
+    if (!data) return setItems([]);
+    const enriched = await Promise.all(data.map(async (r: any) => {
+      const { data: signed } = await supabase.storage.from("family-media").createSignedUrl(r.storage_path, 3600);
+      return { id: r.id, url: signed?.signedUrl ?? "", file_name: r.file_name, file_type: r.file_type, user_id: r.user_id, storage_path: r.storage_path };
+    }));
+    setItems(enriched);
+  };
+
+  const onUpload = async (files: FileList | null) => {
+    if (!files || !user || !selectedCategory) return;
+    setUploading(true);
+    try {
+      for (const file of Array.from(files)) {
+        const path = `${user.id}/${selectedCategory.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
+        const { error: upErr } = await supabase.storage.from("family-media").upload(path, file, { contentType: file.type });
+        if (upErr) throw upErr;
+        const { error: dbErr } = await supabase.from("media_uploads").insert({
+          user_id: user.id,
+          category: selectedCategory.id,
+          storage_path: path,
+          file_name: file.name,
+          file_type: file.type || "application/octet-stream",
+          file_size: file.size,
+        });
+        if (dbErr) throw dbErr;
+      }
+      toast({ title: "Uploaded", description: `${files.length} file(s) added to ${selectedCategory.title}.` });
+      loadMedia(selectedCategory.id);
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message ?? "Try again.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const removeItem = async (id: string, storage_path: string, ownerId: string) => {
+    if (!user || ownerId !== user.id) {
+      toast({ title: "Not allowed", description: "You can only delete your own uploads.", variant: "destructive" });
+      return;
+    }
+    await supabase.storage.from("family-media").remove([storage_path]);
+    await supabase.from("media_uploads").delete().eq("id", id);
+    setItems((it) => it.filter((i) => i.id !== id));
+  };
 
   if (loading) {
     return (
