@@ -1,13 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, GitBranch } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const FAMILY_BRANCHES = [
+  "Teko Mazile (branch)",
+  "Mmasane Bodilenyane (branch)",
+  "Onkgopotse Boy Bodilenyane (branch)",
+  "Sechele Bodilenyane (branch)",
+  "Masego Bodilenyane (branch)",
+  "Thuso Bodilenyane (branch)",
+  "Letsogile 'Stanley' Bodilenyane (branch)",
+  "Stanley Poane (branch)",
+  "Magdeline Bodilenyane (branch)",
+  "Other / Extended family",
+];
 
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +31,7 @@ const Register = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    familyBranch: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   

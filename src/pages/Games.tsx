@@ -40,7 +40,10 @@ const navItems = [
 ];
 
 const games = [
-  { id: "crossword", route: "/games/crossword", title: "Botswana Crossword", description: "Test your knowledge of Botswana locations and family names", icon: Grid3X3, color: "from-sage-500 to-sage-600", players: "1 Player", category: "Puzzle", available: true },
+  { id: "crossword", route: "/games/crossword", title: "Botswana Crossword", description: "Multi-level crossword with Setswana and family themes", icon: Grid3X3, color: "from-sage-500 to-sage-600", players: "1 Player", category: "Puzzle", available: true },
+  { id: "word-search", route: "/games/word-search", title: "Word Search", description: "Find family and Setswana words hidden in the grid", icon: Grid3X3, color: "from-lime-500 to-lime-600", players: "1 Player", category: "Puzzle", available: true },
+  { id: "memory-match", route: "/games/memory-match", title: "Memory Match", description: "Flip pairs of family symbols in as few moves as possible", icon: Puzzle, color: "from-fuchsia-500 to-fuchsia-600", players: "1 Player", category: "Puzzle", available: true },
+  { id: "tic-tac-toe", route: "/games/tic-tac-toe", title: "Tic-Tac-Toe", description: "Classic two-player match", icon: Grid3X3, color: "from-indigo-500 to-indigo-600", players: "2 Players", category: "Board Game", available: true },
   { id: "bible-trivia", route: "/games/bible-trivia", title: "Bible Trivia", description: "Challenge yourself with questions from the Holy Bible", icon: BookOpen, color: "from-amber-500 to-amber-600", players: "1 Player", category: "Trivia", available: true },
   { id: "family-trivia", route: "/games/family-trivia", title: "Family Trivia", description: "How well do you know your family history and members?", icon: Users, color: "from-rose-500 to-rose-600", players: "1 Player", category: "Trivia", available: true },
   { id: "ludo", route: "/games/ludo", title: "Ludo", description: "Classic race to the finish", icon: Dices, color: "from-blue-500 to-blue-600", players: "2 Players", category: "Board Game", available: true },

@@ -28,6 +28,9 @@ import Chess from "./games/Chess";
 import Crazy8 from "./games/Crazy8";
 import Rummy from "./games/Rummy";
 import FamilyPuzzle from "./games/FamilyPuzzle";
+import WordSearch from "./games/WordSearch";
+import MemoryMatch from "./games/MemoryMatch";
+import TicTacToe from "./games/TicTacToe";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +60,9 @@ const App = () => (
             <Route path="/games/crazy-8" element={<Crazy8 />} />
             <Route path="/games/rummy" element={<Rummy />} />
             <Route path="/games/family-puzzle" element={<FamilyPuzzle />} />
+            <Route path="/games/word-search" element={<WordSearch />} />
+            <Route path="/games/memory-match" element={<MemoryMatch />} />
+            <Route path="/games/tic-tac-toe" element={<TicTacToe />} />
             <Route path="/resources" element={<Resources />} />
             <Route path="/library" element={<Library />} />
             <Route path="/maggie" element={<Maggie />} />
