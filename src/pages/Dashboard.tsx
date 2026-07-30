@@ -32,6 +32,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { BirthdaysPanel } from "@/components/BirthdaysPanel";
 
 // Sidebar navigation items
 const navItems = [
@@ -473,7 +474,11 @@ const Dashboard = () => {
               ))}
             </div>
           </motion.div>
-        </main>
+        
+        <div className="mt-6">
+          <BirthdaysPanel />
+        </div>
+</main>
       </div>
 
       {/* Notifications Sheet */}
