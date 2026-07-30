@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Karla:wght@300;400;500;600;700&display=swap');
 
 @layer base {
   :root {
@@ -59,6 +59,9 @@
     --earth-400: 28 20% 55%;
     --earth-500: 25 18% 42%;
 
+    --parchment: 41 40% 84%;
+    --terracotta: 26 48% 60%;
+    --deep-sage: 145 24% 23%;
     --cream: 45 40% 96%;
     --warm-white: 40 30% 99%;
 

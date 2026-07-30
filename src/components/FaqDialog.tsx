@@ -38,14 +38,16 @@ const faqs = [
   },
 ];
 
-export const FaqDialog = () => {
+export const FaqDialog = ({ trigger }: { trigger?: React.ReactNode }) => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <HelpCircle className="w-4 h-4" />
-          FAQ
-        </Button>
+        {trigger ?? (
+          <Button variant="ghost" size="sm" className="gap-2">
+            <HelpCircle className="w-4 h-4" />
+            FAQ
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>

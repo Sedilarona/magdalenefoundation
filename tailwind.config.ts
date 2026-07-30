@@ -78,11 +78,14 @@ export default {
           500: "hsl(var(--earth-500))",
         },
         cream: "hsl(var(--cream))",
+        parchment: "hsl(var(--parchment))",
+        terracotta: "hsl(var(--terracotta))",
+        "deep-sage": "hsl(var(--deep-sage))",
         "warm-white": "hsl(var(--warm-white))",
       },
       fontFamily: {
-        display: ["'Playfair Display'", "Georgia", "serif"],
-        body: ["'Inter'", "system-ui", "sans-serif"],
+        display: ["'Cormorant Garamond'", "Georgia", "serif"],
+        body: ["'Karla'", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
