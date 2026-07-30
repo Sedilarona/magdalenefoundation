@@ -18,9 +18,6 @@ import {
   PartyPopper,
   Church,
   Users,
-  Baby,
-  GraduationCap,
-  Cake,
   Upload,
   Grid,
   List,
@@ -86,30 +83,6 @@ const photoCategories: PhotoCategory[] = [
     description: "Coming together as one family",
     icon: Users,
     color: "from-sage-500 to-sage-600",
-    count: 0,
-  },
-  {
-    id: "births",
-    title: "New Arrivals",
-    description: "Welcoming new family members",
-    icon: Baby,
-    color: "from-sky-400 to-sky-500",
-    count: 0,
-  },
-  {
-    id: "graduations",
-    title: "Graduations",
-    description: "Academic achievements and milestones",
-    icon: GraduationCap,
-    color: "from-purple-400 to-purple-500",
-    count: 0,
-  },
-  {
-    id: "birthdays",
-    title: "Birthdays",
-    description: "Celebrating another year of life",
-    icon: Cake,
-    color: "from-pink-400 to-pink-500",
     count: 0,
   },
   {
@@ -290,7 +263,7 @@ const Library = () => {
                   </Link>
                 )}
                 <h1 className="font-display text-xl font-semibold text-foreground">
-                  {selectedCategory ? selectedCategory.title : "Photo Library"}
+                  {selectedCategory ? selectedCategory.title : "Family Memories"}
                 </h1>
               </div>
             </div>
@@ -329,14 +302,14 @@ const Library = () => {
                     <Camera className="w-8 h-8" />
                   </div>
                   <div>
-                    <h2 className="font-display text-2xl lg:text-3xl font-bold">Photo Library</h2>
+                    <h2 className="font-display text-2xl lg:text-3xl font-bold">Family Memories</h2>
                     <p className="text-primary-foreground/80">
                       Preserve and share our family's precious memories
                     </p>
                   </div>
                 </div>
 
-                <Button variant="secondary" className="gap-2" onClick={() => setSelectedCategory(photoCategories[7])}>
+                <Button variant="secondary" className="gap-2" onClick={() => setSelectedCategory(photoCategories[photoCategories.length - 1])}>
                   <Upload className="w-4 h-4" />
                   Go to General Photos
                 </Button>
@@ -344,7 +317,7 @@ const Library = () => {
 
               {/* Categories Grid */}
               <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-                Photo Categories
+                Memory Collections
               </h3>
               
               <div className={`grid gap-6 ${
