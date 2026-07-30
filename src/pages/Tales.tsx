@@ -21,6 +21,26 @@ import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const TALE_CATEGORIES = ["History", "Lineage", "Family Origin", "Memory", "Wisdom", "General"];
 
 // Sidebar navigation items
 const navItems = [
@@ -182,9 +202,62 @@ const TaleModal = ({ tale, onClose }: { tale: Tale | null; onClose: () => void }
 const Tales = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedTale, setSelectedTale] = useState<Tale | null>(null);
-  const [tales] = useState<Tale[]>(defaultTales);
+  const [tales, setTales] = useState<Tale[]>(defaultTales);
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({ title: "", category: "Memory", content: "" });
   const { user, loading } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+
+  const loadTales = async () => {
+    const { data } = await supabase
+      .from("tales")
+      .select("id, title, category, content, created_at")
+      .order("created_at", { ascending: false });
+    const saved: Tale[] = (data ?? []).map((t: any) => ({
+      id: t.id,
+      title: t.title,
+      category: t.category ?? "General",
+      content: t.content,
+      createdAt: new Date(t.created_at).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }),
+    }));
+    setTales([...saved, ...defaultTales]);
+  };
+
+  useEffect(() => {
+    if (user) loadTales();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  const saveTale = async () => {
+    if (!user) return;
+    if (!form.title.trim() || !form.content.trim()) {
+      toast({ title: "Add a title and your story", variant: "destructive" });
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("tales").insert({
+      user_id: user.id,
+      title: form.title.trim(),
+      category: form.category,
+      content: form.content.trim(),
+      is_published: true,
+    });
+    setSaving(false);
+    if (error) {
+      toast({ title: "Could not save your tale", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Tale recorded", description: "Thank you for preserving our history." });
+    setForm({ title: "", category: "Memory", content: "" });
+    setAddOpen(false);
+    loadTales();
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -267,7 +340,7 @@ const Tales = () => {
                 Our Tales
               </h1>
             </div>
-            <Button className="gap-2">
+            <Button className="gap-2" onClick={() => setAddOpen(true)}>
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Tale</span>
             </Button>
@@ -305,6 +378,58 @@ const Tales = () => {
           </div>
         </main>
       </div>
+
+      {/* Add Tale Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-2xl">Record a Story</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="tale-title">Title</Label>
+              <Input
+                id="tale-title"
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                placeholder="e.g. The day we gathered at Serowe"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tale-category">Category</Label>
+              <Select
+                value={form.category}
+                onValueChange={(v) => setForm((f) => ({ ...f, category: v }))}
+              >
+                <SelectTrigger id="tale-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TALE_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tale-content">Your story</Label>
+              <Textarea
+                id="tale-content"
+                rows={10}
+                value={form.content}
+                onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                placeholder="Tell it the way you would tell it around the fire..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
+            <Button onClick={saveTale} disabled={saving}>
+              {saving ? "Saving..." : "Save Tale"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Tale Modal */}
       <AnimatePresence>
