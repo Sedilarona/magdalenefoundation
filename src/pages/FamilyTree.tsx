@@ -237,10 +237,14 @@ const FamilyTree = () => {
     
     if (!error && data) {
       setFamilyMembers(data);
-      // Expand root by default
-      const root = data.find(m => m.generation_level === 0);
+      // Expand the earliest ancestor + the next generation by default
+      const root =
+        [...data].filter((m) => !m.parent_id).sort(
+          (a, b) => (a.generation_level ?? 0) - (b.generation_level ?? 0)
+        )[0] ?? data[0];
       if (root) {
-        setExpandedNodes(new Set([root.id]));
+        const firstGen = data.filter((m) => m.parent_id === root.id).map((m) => m.id);
+        setExpandedNodes(new Set([root.id, ...firstGen]));
       }
     }
     setLoading(false);
