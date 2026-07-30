@@ -158,6 +158,54 @@ export type Database = {
           },
         ]
       }
+      game_challenges: {
+        Row: {
+          created_at: string
+          game_key: string
+          host_id: string
+          host_name: string
+          id: string
+          max_players: number
+          player_ids: string[]
+          players: Json
+          state: Json
+          status: string
+          turn_index: number
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game_key: string
+          host_id: string
+          host_name: string
+          id?: string
+          max_players?: number
+          player_ids?: string[]
+          players?: Json
+          state?: Json
+          status?: string
+          turn_index?: number
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game_key?: string
+          host_id?: string
+          host_name?: string
+          id?: string
+          max_players?: number
+          player_ids?: string[]
+          players?: Json
+          state?: Json
+          status?: string
+          turn_index?: number
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       hymns: {
         Row: {
           author: string | null

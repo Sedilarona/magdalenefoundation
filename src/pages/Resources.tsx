@@ -33,7 +33,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: GitBranch, label: "Family Tree", href: "/family-tree" },
   { icon: BookHeart, label: "Our Tales", href: "/tales" },
-  { icon: Library, label: "Library", href: "/library" },
+  { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources", active: true },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },

@@ -26,7 +26,7 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: GitBranch, label: "Family Tree", href: "/family-tree", active: true },
   { icon: BookHeart, label: "Our Tales", href: "/tales" },
-  { icon: Library, label: "Library", href: "/library" },
+  { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
@@ -181,7 +181,12 @@ const TreeBranch = ({
             
             <div className="flex flex-wrap justify-center gap-4 pt-2">
               {children
-                .filter(child => !child.spouse_id || child.id < (child.spouse_id || ''))
+                .filter((child, i) => {
+                  if (!child.spouse_id) return true;
+                  // if the spouse is also a child of this parent, only render the first one
+                  const spouseIdx = children.findIndex((c) => c.id === child.spouse_id);
+                  return spouseIdx === -1 || i < spouseIdx;
+                })
                 .map((child) => (
                 <div key={child.id} className="flex flex-col items-center">
                   {children.length > 1 && (
@@ -232,10 +237,14 @@ const FamilyTree = () => {
     
     if (!error && data) {
       setFamilyMembers(data);
-      // Expand root by default
-      const root = data.find(m => m.generation_level === 0);
+      // Expand the earliest ancestor + the next generation by default
+      const root =
+        [...data].filter((m) => !m.parent_id).sort(
+          (a, b) => (a.generation_level ?? 0) - (b.generation_level ?? 0)
+        )[0] ?? data[0];
       if (root) {
-        setExpandedNodes(new Set([root.id]));
+        const firstGen = data.filter((m) => m.parent_id === root.id).map((m) => m.id);
+        setExpandedNodes(new Set([root.id, ...firstGen]));
       }
     }
     setLoading(false);
@@ -258,11 +267,18 @@ const FamilyTree = () => {
   };
 
   const collapseAll = () => {
-    const root = familyMembers.find(m => m.generation_level === 0);
-    setExpandedNodes(root ? new Set([root.id]) : new Set());
+    setExpandedNodes(new Set());
   };
 
-  const rootMember = familyMembers.find(m => m.generation_level === 0);
+  // Root = the earliest ancestor with no parent recorded
+  const rootMember =
+    [...familyMembers]
+      .filter((m) => !m.parent_id && !m.spouse_id)
+      .sort((a, b) => (a.generation_level ?? 0) - (b.generation_level ?? 0))[0] ??
+    [...familyMembers]
+      .filter((m) => !m.parent_id)
+      .sort((a, b) => (a.generation_level ?? 0) - (b.generation_level ?? 0))[0] ??
+    familyMembers[0];
 
   const filteredMembers = searchQuery
     ? familyMembers.filter(m => 
