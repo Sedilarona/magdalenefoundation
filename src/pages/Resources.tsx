@@ -47,6 +47,7 @@ interface Resource {
   icon: typeof Book;
   language: string;
   available: boolean;
+  externalUrl?: string;
   hasHymns?: boolean;
   hasScripture?: boolean;
 }
@@ -81,11 +82,12 @@ const resources: Resource[] = [
   {
     id: "difela-roma",
     title: "Difela tsa Roma",
-    description: "Roman Catholic hymns in Setswana for worship and devotion",
+    description: "Roman Catholic hymns in Setswana for worship and devotion. Browse the full collection at catholichymns.co.za",
     category: "hymns",
     icon: Music,
     language: "Setswana",
     available: false,
+    externalUrl: "https://catholichymns.co.za/",
   },
   {
     id: "difela-lontone",
@@ -585,7 +587,19 @@ const Resources = () => {
                       </p>
 
                       <div className="flex gap-2">
-                        {resource.available ? (
+                        {!resource.available && resource.externalUrl ? (
+                          <a
+                            href={resource.externalUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1"
+                          >
+                            <Button variant="outline" size="sm" className="w-full gap-2">
+                              <ExternalLink className="w-4 h-4" />
+                              Open catholichymns.co.za
+                            </Button>
+                          </a>
+                        ) : resource.available ? (
                           <Button 
                             variant="default" 
                             size="sm" 
