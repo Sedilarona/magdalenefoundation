@@ -81,11 +81,12 @@ const resources: Resource[] = [
   {
     id: "difela-roma",
     title: "Difela tsa Roma",
-    description: "Roman Catholic hymns in Setswana for worship and devotion",
+    description: "Roman Catholic hymns in Setswana for worship and devotion. Browse the full collection at catholichymns.co.za",
     category: "hymns",
     icon: Music,
     language: "Setswana",
     available: false,
+    externalUrl: "https://catholichymns.co.za/",
   },
   {
     id: "difela-lontone",
