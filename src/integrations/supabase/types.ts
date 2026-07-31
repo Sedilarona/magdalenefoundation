@@ -426,7 +426,45 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      family_directory: {
+        Row: {
+          avatar_url: string | null
+          contribution_points: number | null
+          created_at: string | null
+          family_branch: string | null
+          full_name: string | null
+          generation: string | null
+          id: string | null
+          location: string | null
+          occupation: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          contribution_points?: number | null
+          created_at?: string | null
+          family_branch?: string | null
+          full_name?: string | null
+          generation?: string | null
+          id?: string | null
+          location?: string | null
+          occupation?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          contribution_points?: number | null
+          created_at?: string | null
+          family_branch?: string | null
+          full_name?: string | null
+          generation?: string | null
+          id?: string | null
+          location?: string | null
+          occupation?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       get_my_phone_number: { Args: never; Returns: string }
