@@ -206,6 +206,39 @@ export type Database = {
         }
         Relationships: []
       }
+      game_scores: {
+        Row: {
+          created_at: string
+          game_key: string
+          game_title: string
+          id: string
+          level: number
+          player_name: string
+          points: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_key: string
+          game_title: string
+          id?: string
+          level?: number
+          player_name?: string
+          points?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_key?: string
+          game_title?: string
+          id?: string
+          level?: number
+          player_name?: string
+          points?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       hymns: {
         Row: {
           author: string | null
