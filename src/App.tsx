@@ -31,6 +31,7 @@ import FamilyPuzzle from "./games/FamilyPuzzle";
 import WordSearch from "./games/WordSearch";
 import MemoryMatch from "./games/MemoryMatch";
 import TicTacToe from "./games/TicTacToe";
+import Leaderboard from "./pages/Leaderboard";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/family-tree" element={<FamilyTree />} />
             <Route path="/tales" element={<Tales />} />
             <Route path="/games" element={<Games />} />
+            <Route path="/games/leaderboard" element={<Leaderboard />} />
             <Route path="/games/crossword" element={<Crossword />} />
             <Route path="/games/bible-trivia" element={<BibleTrivia />} />
             <Route path="/games/family-trivia" element={<FamilyTrivia />} />
