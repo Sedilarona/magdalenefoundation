@@ -9,6 +9,7 @@ import {
   Gamepad2,
   FolderOpen,
   Sparkles,
+  MapPin,
   Menu,
   X,
   Settings,
