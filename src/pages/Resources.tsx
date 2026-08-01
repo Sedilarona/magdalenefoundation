@@ -437,6 +437,39 @@ const Resources = () => {
                 </div>
               </div>
             </motion.div>
+          ) : selectedResource?.recipe ? (
+            /* Recipe View */
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto">
+              <div className="bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-primary-foreground">
+                  <span className="text-sm opacity-80">{selectedResource.recipe.serves}</span>
+                  <h2 className="font-display text-2xl font-bold mt-1">{selectedResource.title}</h2>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-2">Ingredients</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-foreground">
+                      {selectedResource.recipe.ingredients.map((i) => (
+                        <li key={i}>{i}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-2">Process</h3>
+                    <ol className="list-decimal pl-5 space-y-2 text-foreground">
+                      {selectedResource.recipe.steps.map((s) => (
+                        <li key={s}>{s}</li>
+                      ))}
+                    </ol>
+                  </div>
+                  {selectedResource.recipe.tip && (
+                    <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+                      {selectedResource.recipe.tip}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           ) : selectedResource?.hasScripture ? (
             /* Scripture List View */
             <motion.div
