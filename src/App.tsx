@@ -69,6 +69,7 @@ const App = () => (
             <Route path="/resources" element={<Resources />} />
             <Route path="/library" element={<Library />} />
             <Route path="/maggie" element={<Maggie />} />
+            <Route path="/locate-family" element={<LocateFamily />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
