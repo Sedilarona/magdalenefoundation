@@ -138,12 +138,53 @@ const resources: Resource[] = [
     available: true,
     hasScripture: true,
   },
+  {
+    id: "ginger-brew",
+    title: "Ginger Brewing",
+    description: "The family ginger brew — a refreshing favourite at gatherings. Makes 10 litres.",
+    category: "recipes",
+    icon: ChefHat,
+    language: "Family recipe",
+    available: true,
+    recipe: {
+      serves: "Makes 10 litres",
+      ingredients: [
+        "50g ground ginger",
+        "1 tartaric acid",
+        "1 cream of tartar",
+        "Sugar to taste (depends on your taste buds)",
+      ],
+      steps: [
+        "Boil the ginger with about 2 cups of water.",
+        "In a 10 litre bucket, pour the ginger mix.",
+        "Fill with water about 3/4 of the way.",
+        "Add the tartaric acid and cream of tartar.",
+        "Add sugar.",
+        "Mix well. After mixing you can add a bit of water to manage the taste.",
+      ],
+      tip: "Taste as you go — the sweetness is a personal preference.",
+    },
+  },
+  {
+    id: "land-kyc",
+    title: "Land Application KYC",
+    description:
+      "Land Authority KYC and land application portal for Botswana. Register, verify your details and track your land application.",
+    category: "services",
+    icon: Landmark,
+    language: "Botswana",
+    available: false,
+    externalUrl: "https://lakyc.gov.bw/applications/dashboard/",
+    externalLabel: "Open lakyc.gov.bw",
+  },
 ];
 
 const categoryLabels = {
   hymns: "Hymn Books",
   scripture: "Holy Scriptures",
   faith: "Faith Materials",
+  recipes: "Recipes",
+  services: "Services & Forms",
 };
 
 const Resources = () => {
