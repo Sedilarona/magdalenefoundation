@@ -683,7 +683,7 @@ const Resources = () => {
                           >
                             <Button variant="outline" size="sm" className="w-full gap-2">
                               <ExternalLink className="w-4 h-4" />
-                              Open catholichymns.co.za
+                              {resource.externalLabel ?? "Open catholichymns.co.za"}
                             </Button>
                           </a>
                         ) : resource.available ? (
@@ -694,7 +694,7 @@ const Resources = () => {
                             onClick={() => setSelectedResource(resource)}
                           >
                             <ExternalLink className="w-4 h-4" />
-                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : "Read Online"}
+                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : resource.recipe ? "View Recipe" : "Read Online"}
                           </Button>
                         ) : (
                           <div className="w-full text-center py-2 text-sm text-muted-foreground bg-sage-50 rounded-lg">
