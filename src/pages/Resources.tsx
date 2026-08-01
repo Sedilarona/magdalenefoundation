@@ -22,6 +22,8 @@ import {
   Loader2,
   Search,
   ChevronRight,
+  ChefHat,
+  Landmark,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
