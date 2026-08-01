@@ -41,17 +41,26 @@ const navItems = [
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
+interface Recipe {
+  serves: string;
+  ingredients: string[];
+  steps: string[];
+  tip?: string;
+}
+
 interface Resource {
   id: string;
   title: string;
   description: string;
-  category: "hymns" | "scripture" | "faith";
+  category: "hymns" | "scripture" | "faith" | "recipes" | "services";
   icon: typeof Book;
   language: string;
   available: boolean;
   externalUrl?: string;
+  externalLabel?: string;
   hasHymns?: boolean;
   hasScripture?: boolean;
+  recipe?: Recipe;
 }
 
 interface ScriptureContent {
