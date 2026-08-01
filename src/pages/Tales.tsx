@@ -219,11 +219,21 @@ const TaleModal = ({ tale, onClose }: { tale: Tale | null; onClose: () => void }
         </div>
         <div className="p-6 overflow-y-auto max-h-[60vh]">
           <div className="prose prose-sage max-w-none">
-            {tale.content.split("\n\n").map((paragraph, index) => (
-              <p key={index} className="text-foreground leading-relaxed mb-4">
-                {paragraph}
-              </p>
-            ))}
+            {tale.content.split("\n\n").map((paragraph, index) => {
+              const isDiagram = /[│┌┴─]|\/\s+\\/.test(paragraph);
+              return isDiagram ? (
+                <pre
+                  key={index}
+                  className="text-foreground text-xs sm:text-sm leading-snug mb-4 overflow-x-auto font-mono bg-sage-50/60 rounded-lg p-4"
+                >
+                  {paragraph}
+                </pre>
+              ) : (
+                <p key={index} className="text-foreground leading-relaxed mb-4 whitespace-pre-line">
+                  {paragraph}
+                </p>
+              );
+            })}
           </div>
         </div>
         <div className="p-4 border-t border-border bg-sage-50/50">
