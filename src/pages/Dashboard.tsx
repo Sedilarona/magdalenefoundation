@@ -42,6 +42,7 @@ const navItems = [
   { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
+  { icon: MapPin, label: "Locate Family", href: "/locate-family" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
@@ -457,6 +458,7 @@ const Dashboard = () => {
               {[
                 { icon: BookHeart, label: "Record a Story", href: "/tales" },
                 { icon: GitBranch, label: "View Family Tree", href: "/family-tree" },
+                { icon: MapPin, label: "Locate Family", href: "/locate-family" },
                 { icon: Sparkles, label: "Ask MAGGIE", href: "/maggie" },
               ].map((action) => (
                 <Link

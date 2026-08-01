@@ -9,6 +9,7 @@ import {
   Gamepad2,
   FolderOpen,
   Sparkles,
+  MapPin,
   Menu,
   X,
   Settings,
@@ -40,6 +41,7 @@ const navItems = [
   { icon: LibraryIcon, label: "Family Memories", href: "/library", active: true },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
+  { icon: MapPin, label: "Locate Family", href: "/locate-family" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 

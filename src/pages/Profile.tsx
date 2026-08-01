@@ -49,6 +49,7 @@ const navItems = [
   { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
+  { icon: MapPin, label: "Locate Family", href: "/locate-family" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
@@ -312,18 +313,23 @@ const Profile = () => {
 
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location">Location (pin your exact city, village or ward)</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
                       id="location"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
-                      placeholder="City, Country"
+                      placeholder="e.g. Gaborone - Block 5, or Palapye - Boikago Ward"
                       className="pl-10"
                     />
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Be specific (town/village and ward) so your pin shows correctly on{" "}
+                    <Link to="/locate-family" className="text-primary underline">Locate Family</Link>.
+                  </p>
                 </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor="occupation">Occupation</Label>

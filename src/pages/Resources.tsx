@@ -9,6 +9,7 @@ import {
   Gamepad2,
   FolderOpen,
   Sparkles,
+  MapPin,
   Menu,
   X,
   Settings,
@@ -21,6 +22,8 @@ import {
   Loader2,
   Search,
   ChevronRight,
+  ChefHat,
+  Landmark,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -36,20 +39,30 @@ const navItems = [
   { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources", active: true },
+  { icon: MapPin, label: "Locate Family", href: "/locate-family" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
+
+interface Recipe {
+  serves: string;
+  ingredients: string[];
+  steps: string[];
+  tip?: string;
+}
 
 interface Resource {
   id: string;
   title: string;
   description: string;
-  category: "hymns" | "scripture" | "faith";
+  category: "hymns" | "scripture" | "faith" | "recipes" | "services";
   icon: typeof Book;
   language: string;
   available: boolean;
   externalUrl?: string;
+  externalLabel?: string;
   hasHymns?: boolean;
   hasScripture?: boolean;
+  recipe?: Recipe;
 }
 
 interface ScriptureContent {
@@ -127,12 +140,53 @@ const resources: Resource[] = [
     available: true,
     hasScripture: true,
   },
+  {
+    id: "ginger-brew",
+    title: "Ginger Brewing",
+    description: "The family ginger brew — a refreshing favourite at gatherings. Makes 10 litres.",
+    category: "recipes",
+    icon: ChefHat,
+    language: "Family recipe",
+    available: true,
+    recipe: {
+      serves: "Makes 10 litres",
+      ingredients: [
+        "50g ground ginger",
+        "1 tartaric acid",
+        "1 cream of tartar",
+        "Sugar to taste (depends on your taste buds)",
+      ],
+      steps: [
+        "Boil the ginger with about 2 cups of water.",
+        "In a 10 litre bucket, pour the ginger mix.",
+        "Fill with water about 3/4 of the way.",
+        "Add the tartaric acid and cream of tartar.",
+        "Add sugar.",
+        "Mix well. After mixing you can add a bit of water to manage the taste.",
+      ],
+      tip: "Taste as you go — the sweetness is a personal preference.",
+    },
+  },
+  {
+    id: "land-kyc",
+    title: "Land Application KYC",
+    description:
+      "Land Authority KYC and land application portal for Botswana. Register, verify your details and track your land application.",
+    category: "services",
+    icon: Landmark,
+    language: "Botswana",
+    available: false,
+    externalUrl: "https://lakyc.gov.bw/applications/dashboard/",
+    externalLabel: "Open lakyc.gov.bw",
+  },
 ];
 
 const categoryLabels = {
   hymns: "Hymn Books",
   scripture: "Holy Scriptures",
   faith: "Faith Materials",
+  recipes: "Recipes",
+  services: "Services & Forms",
 };
 
 const Resources = () => {
@@ -383,6 +437,39 @@ const Resources = () => {
                 </div>
               </div>
             </motion.div>
+          ) : selectedResource?.recipe ? (
+            /* Recipe View */
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto">
+              <div className="bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden">
+                <div className="bg-gradient-to-r from-amber-500 to-amber-600 p-6 text-primary-foreground">
+                  <span className="text-sm opacity-80">{selectedResource.recipe.serves}</span>
+                  <h2 className="font-display text-2xl font-bold mt-1">{selectedResource.title}</h2>
+                </div>
+                <div className="p-6 space-y-6">
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-2">Ingredients</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-foreground">
+                      {selectedResource.recipe.ingredients.map((i) => (
+                        <li key={i}>{i}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h3 className="font-display text-lg font-semibold text-foreground mb-2">Process</h3>
+                    <ol className="list-decimal pl-5 space-y-2 text-foreground">
+                      {selectedResource.recipe.steps.map((s) => (
+                        <li key={s}>{s}</li>
+                      ))}
+                    </ol>
+                  </div>
+                  {selectedResource.recipe.tip && (
+                    <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
+                      {selectedResource.recipe.tip}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
           ) : selectedResource?.hasScripture ? (
             /* Scripture List View */
             <motion.div
@@ -596,7 +683,7 @@ const Resources = () => {
                           >
                             <Button variant="outline" size="sm" className="w-full gap-2">
                               <ExternalLink className="w-4 h-4" />
-                              Open catholichymns.co.za
+                              {resource.externalLabel ?? "Open catholichymns.co.za"}
                             </Button>
                           </a>
                         ) : resource.available ? (
@@ -607,7 +694,7 @@ const Resources = () => {
                             onClick={() => setSelectedResource(resource)}
                           >
                             <ExternalLink className="w-4 h-4" />
-                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : "Read Online"}
+                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : resource.recipe ? "View Recipe" : "Read Online"}
                           </Button>
                         ) : (
                           <div className="w-full text-center py-2 text-sm text-muted-foreground bg-sage-50 rounded-lg">
