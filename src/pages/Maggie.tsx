@@ -303,16 +303,24 @@ const Maggie = () => {
               </div>
             </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearChat}
-              className="gap-2"
-              disabled={messages.length === 0}
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span className="hidden sm:inline">New Chat</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Link to="/family-art">
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create image</span>
+                </Button>
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearChat}
+                className="gap-2"
+                disabled={messages.length === 0}
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span className="hidden sm:inline">New Chat</span>
+              </Button>
+            </div>
           </div>
         </header>
 
