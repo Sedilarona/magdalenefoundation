@@ -135,13 +135,17 @@ const TreeBranch = ({
   toggleNode: (id: string) => void;
 }) => {
   const isExpanded = expandedNodes.has(member.id);
-  const children = allMembers.filter(m => m.parent_id === member.id).sort(sortSiblings);
-  const hasChildren = children.length > 0;
-  
   // Find spouse
-  const spouse = member.spouse_id 
-    ? allMembers.find(m => m.id === member.spouse_id)
+  const spouse = member.spouse_id
+    ? allMembers.find((m) => m.id === member.spouse_id)
     : null;
+
+  // Children of this member OR of the spouse (children are often recorded under one parent only)
+  const children = allMembers
+    .filter((m) => m.parent_id === member.id || (spouse && m.parent_id === spouse.id))
+    .filter((m) => m.id !== member.id && m.id !== spouse?.id)
+    .sort(sortSiblings);
+  const hasChildren = children.length > 0;
 
   return (
     <div className="flex flex-col items-center">
@@ -157,13 +161,14 @@ const TreeBranch = ({
             <div className="w-4 h-0.5 bg-sage-400" />
             <MemberNode 
               member={spouse}
-              isExpanded={false}
-              onToggle={() => {}}
-              hasChildren={false}
+              isExpanded={isExpanded}
+              onToggle={() => toggleNode(member.id)}
+              hasChildren={hasChildren}
             />
           </>
         )}
       </div>
+
       
       <AnimatePresence>
         {hasChildren && isExpanded && (
