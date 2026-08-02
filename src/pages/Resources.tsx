@@ -40,6 +40,7 @@ const navItems = [
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources", active: true },
   { icon: MapPin, label: "Locate Family", href: "/locate-family" },
+  { icon: Wrench, label: "Family Services", href: "/family-services" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
