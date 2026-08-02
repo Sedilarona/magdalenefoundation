@@ -16,6 +16,8 @@ import Resources from "./pages/Resources";
 import Library from "./pages/Library";
 import Maggie from "./pages/Maggie";
 import LocateFamily from "./pages/LocateFamily";
+import FamilyServices from "./pages/FamilyServices";
+import FamilyArt from "./pages/FamilyArt";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
