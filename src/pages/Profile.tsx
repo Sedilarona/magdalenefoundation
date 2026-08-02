@@ -9,6 +9,7 @@ import {
   Gamepad2,
   FolderOpen,
   Sparkles,
+  Wrench,
   Menu,
   X,
   Settings,
@@ -21,6 +22,7 @@ import {
   Loader2,
   Plus,
   Trash2,
+  Camera,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ const navItems = [
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: MapPin, label: "Locate Family", href: "/locate-family" },
+  { icon: Wrench, label: "Family Services", href: "/family-services" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
@@ -64,9 +67,12 @@ const Profile = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
 
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -93,13 +99,54 @@ const Profile = () => {
     
     const { data, error } = await supabase
       .from("profiles")
-      .select("phone_number, services")
+      .select("phone_number, services, avatar_url")
       .eq("user_id", user.id)
       .single();
 
     if (!error && data) {
       setPhoneNumber(data.phone_number || "");
       setServices(data.services || []);
+      setAvatarPath(data.avatar_url || null);
+      if (data.avatar_url) loadAvatar(data.avatar_url);
+    }
+  };
+
+  const loadAvatar = async (path: string) => {
+    const { data } = await supabase.storage.from("family-media").createSignedUrl(path, 3600);
+    if (data?.signedUrl) setAvatarUrl(data.signedUrl);
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "Please choose an image file", variant: "destructive" });
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("family-media")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+
+      const { error: dbErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: path, updated_at: new Date().toISOString() })
+        .eq("user_id", user.id);
+      if (dbErr) throw dbErr;
+
+      setAvatarPath(path);
+      await loadAvatar(path);
+      await refreshProfile();
+      toast({ title: "Profile picture updated" });
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+    } finally {
+      setUploadingAvatar(false);
+      e.target.value = "";
     }
   };
 
@@ -123,6 +170,8 @@ const Profile = () => {
         .eq("user_id", user.id);
 
       if (error) throw error;
+
+      await refreshProfile();
 
       toast({
         title: "Profile updated",
@@ -257,13 +306,27 @@ const Profile = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-gradient-to-br from-sage-500 to-sage-600 rounded-2xl p-6 text-center mb-6"
             >
-              <div className="w-24 h-24 mx-auto rounded-full bg-primary-foreground/20 flex items-center justify-center text-primary-foreground text-3xl font-bold mb-3">
-                {fullName
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2) || <User className="w-10 h-10" />}
+              <div className="relative w-24 h-24 mx-auto mb-3">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-primary-foreground/20 flex items-center justify-center text-primary-foreground text-3xl font-bold">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={`${fullName || "Member"} profile picture`} className="w-full h-full object-cover" />
+                  ) : (
+                    fullName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2) || <User className="w-10 h-10" />
+                  )}
+                </div>
+                <label className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-card border border-border flex items-center justify-center cursor-pointer shadow-sm hover:bg-muted transition-colors">
+                  {uploadingAvatar ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-foreground" />
+                  ) : (
+                    <Camera className="w-4 h-4 text-foreground" />
+                  )}
+                  <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} disabled={uploadingAvatar} />
+                </label>
               </div>
               <h2 className="font-display text-2xl font-bold text-primary-foreground">
                 {fullName || "Your Name"}

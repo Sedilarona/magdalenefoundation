@@ -9,6 +9,7 @@ import {
   Gamepad2,
   FolderOpen,
   Sparkles,
+  Wrench,
   MapPin,
   Menu,
   X,
@@ -16,6 +17,8 @@ import {
   ArrowLeft,
   Loader2,
   Search,
+  Users,
+  ChevronRight,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -30,6 +33,7 @@ const navItems = [
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: MapPin, label: "Locate Family", href: "/locate-family", active: true },
+  { icon: Wrench, label: "Family Services", href: "/family-services" },
   { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
 ];
 
@@ -166,6 +170,8 @@ declare global {
 const LocateFamily = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [query, setQuery] = useState("");
+  const [showWhere, setShowWhere] = useState(false);
+  const [openPlace, setOpenPlace] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const mapDiv = useRef<HTMLDivElement | null>(null);
@@ -252,6 +258,16 @@ const LocateFamily = () => {
     );
   }
   if (!user) return null;
+
+  const byPlace = Array.from(
+    familyPlaces.reduce((map, p) => {
+      const entry = map.get(p.place) ?? { place: p.place, areas: [] as { area: string; people: string[]; entry: FamilyPlace }[], count: 0 };
+      entry.areas.push({ area: p.area, people: p.people, entry: p });
+      entry.count += p.people.length;
+      map.set(p.place, entry);
+      return map;
+    }, new Map<string, { place: string; areas: { area: string; people: string[]; entry: FamilyPlace }[]; count: number }>()).values()
+  ).sort((a, b) => a.place.localeCompare(b.place));
 
   const filtered = familyPlaces.filter((p) => {
     const q = query.toLowerCase();
@@ -362,6 +378,57 @@ const LocateFamily = () => {
               </div>
             )}
           </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <Button onClick={() => setShowWhere((v) => !v)} className="gap-2">
+              <Users className="w-4 h-4" />
+              {showWhere ? "Hide the list" : "See where"}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              Browse everyone grouped by their town or village.
+            </p>
+          </div>
+
+          {showWhere && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {byPlace.map(({ place, areas, count }) => {
+                const open = openPlace === place;
+                return (
+                  <div key={place} className="bg-card rounded-xl border border-border overflow-hidden">
+                    <button
+                      onClick={() => setOpenPlace(open ? null : place)}
+                      className="w-full flex items-center justify-between gap-2 p-4 text-left hover:bg-muted/50 transition-colors"
+                    >
+                      <span className="font-display font-semibold text-foreground">{place}</span>
+                      <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {count}
+                        <ChevronRight className={`w-4 h-4 transition-transform ${open ? "rotate-90" : ""}`} />
+                      </span>
+                    </button>
+                    {open && (
+                      <div className="px-4 pb-4 space-y-3">
+                        {areas.map((a) => (
+                          <div key={a.area}>
+                            <button
+                              onClick={() => focusPlace(a.entry)}
+                              className="text-xs font-medium text-primary underline"
+                            >
+                              {a.area}
+                            </button>
+                            <ul className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                              {a.people.map((n) => (
+                                <li key={n}>• {n}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
