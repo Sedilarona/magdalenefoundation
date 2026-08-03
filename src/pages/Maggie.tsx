@@ -382,9 +382,11 @@ const Maggie = () => {
                         <span className="text-xs font-medium text-primary">MAGGIE</span>
                       </div>
                     )}
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                      {message.content}
-                    </p>
+                    {message.role === "assistant" ? (
+                      <MaggieMessage content={message.content} />
+                    ) : (
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                    )}
                   </div>
                 </motion.div>
               ))}
