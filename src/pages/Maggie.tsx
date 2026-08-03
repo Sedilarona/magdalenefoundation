@@ -340,16 +340,18 @@ const Maggie = () => {
                 Hello, {userName}!
               </h2>
               <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                I'm MAGGIE, your family's digital matriarch. I can help you explore your family tree, 
-                find relatives, share stories, and preserve our precious memories.
+                I'm MAGGIE — your family's historian, genealogist and heritage keeper. Ask me how you're
+                related to someone, and I'll trace the line, draw the branch and lay out the timeline.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
                 {[
-                  "How am I related to...",
-                  "Tell me about our family history",
-                  "Who are my cousins?",
-                  "Share a hymn from Difela tsa Sione",
+                  "How am I related to Lesego Phatshimo?",
+                  "Draw my nuclear family tree",
+                  "Show a timeline of our family history",
+                  "Who are my first cousins?",
+                  "Whose birthdays are coming up?",
+                  "Which relatives are by marriage in my branch?",
                 ].map((suggestion) => (
                   <button
                     key={suggestion}
