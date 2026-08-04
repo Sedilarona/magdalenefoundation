@@ -130,6 +130,16 @@
     --input: 155 18% 20%;
     --ring: 145 40% 55%;
 
+    --emerald-deep: 162 40% 10%;
+    --emerald: 162 34% 18%;
+    --forest: 150 30% 16%;
+    --ivory: 45 22% 94%;
+    --ivory-deep: 155 15% 18%;
+    --gold: 41 66% 62%;
+    --gold-soft: 41 60% 76%;
+    --gold-foreground: 162 62% 10%;
+    --shadow-archive: 0 10px 34px -14px hsl(0 0% 0% / 0.55);
+
     --sidebar-background: 155 22% 10%;
     --sidebar-foreground: 60 15% 90%;
     --sidebar-primary: 145 40% 55%;

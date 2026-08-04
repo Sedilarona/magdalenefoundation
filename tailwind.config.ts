@@ -82,6 +82,20 @@ export default {
         terracotta: "hsl(var(--terracotta))",
         "deep-sage": "hsl(var(--deep-sage))",
         "warm-white": "hsl(var(--warm-white))",
+        gold: {
+          DEFAULT: "hsl(var(--gold))",
+          soft: "hsl(var(--gold-soft))",
+          foreground: "hsl(var(--gold-foreground))",
+        },
+        ivory: {
+          DEFAULT: "hsl(var(--ivory))",
+          deep: "hsl(var(--ivory-deep))",
+        },
+        emerald: {
+          DEFAULT: "hsl(var(--emerald))",
+          deep: "hsl(var(--emerald-deep))",
+        },
+        forest: "hsl(var(--forest))",
       },
       fontFamily: {
         display: ["'Cormorant Garamond'", "Georgia", "serif"],
