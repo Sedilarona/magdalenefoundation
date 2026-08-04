@@ -257,7 +257,7 @@ const LocateFamily = () => {
     }
     const info = new window.google.maps.InfoWindow();
     markersRef.current.forEach((m) => m.setMap(null));
-    markersRef.current = familyPlaces.map((p) => {
+    markersRef.current = livePlaces.map((p) => {
       const marker = new window.google.maps.Marker({
         position: { lat: p.lat, lng: p.lng },
         map: mapRef.current,
@@ -274,7 +274,7 @@ const LocateFamily = () => {
       });
       return marker;
     });
-  }, [mapReady]);
+  }, [mapReady, livePlaces]);
 
   const focusPlace = (p: FamilyPlace) => {
     if (mapRef.current) {
@@ -294,7 +294,7 @@ const LocateFamily = () => {
   if (!user) return null;
 
   const byPlace = Array.from(
-    familyPlaces.reduce((map, p) => {
+    livePlaces.reduce((map, p) => {
       const entry = map.get(p.place) ?? { place: p.place, areas: [] as { area: string; people: string[]; entry: FamilyPlace }[], count: 0 };
       entry.areas.push({ area: p.area, people: p.people, entry: p });
       entry.count += p.people.length;
@@ -303,7 +303,7 @@ const LocateFamily = () => {
     }, new Map<string, { place: string; areas: { area: string; people: string[]; entry: FamilyPlace }[]; count: number }>()).values()
   ).sort((a, b) => a.place.localeCompare(b.place));
 
-  const filtered = familyPlaces.filter((p) => {
+  const filtered = livePlaces.filter((p) => {
     const q = query.toLowerCase();
     return (
       !q ||
