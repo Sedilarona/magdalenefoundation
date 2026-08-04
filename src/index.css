@@ -65,6 +65,21 @@
     --cream: 45 40% 96%;
     --warm-white: 40 30% 99%;
 
+    /* Heritage archive palette */
+    --emerald-deep: 162 62% 14%;
+    --emerald: 162 48% 22%;
+    --forest: 150 40% 18%;
+    --ivory: 42 44% 96%;
+    --ivory-deep: 40 32% 91%;
+    --gold: 41 58% 52%;
+    --gold-soft: 41 62% 70%;
+    --gold-foreground: 162 62% 12%;
+
+    --gradient-crest: linear-gradient(160deg, hsl(162 62% 14%) 0%, hsl(150 40% 18%) 55%, hsl(162 48% 22%) 100%);
+    --gradient-gold: linear-gradient(120deg, hsl(41 58% 52%) 0%, hsl(41 70% 74%) 50%, hsl(41 58% 52%) 100%);
+    --shadow-archive: 0 10px 34px -14px hsl(162 62% 14% / 0.28);
+
+
     /* Gradients */
     --gradient-hero: linear-gradient(135deg, hsl(145 35% 42% / 0.1) 0%, hsl(35 25% 91% / 0.3) 50%, hsl(155 45% 28% / 0.1) 100%);
     --gradient-card: linear-gradient(180deg, hsl(60 30% 99%) 0%, hsl(145 40% 97%) 100%);
@@ -114,6 +129,16 @@
     --border: 155 18% 20%;
     --input: 155 18% 20%;
     --ring: 145 40% 55%;
+
+    --emerald-deep: 162 40% 10%;
+    --emerald: 162 34% 18%;
+    --forest: 150 30% 16%;
+    --ivory: 45 22% 94%;
+    --ivory-deep: 155 15% 18%;
+    --gold: 41 66% 62%;
+    --gold-soft: 41 60% 76%;
+    --gold-foreground: 162 62% 10%;
+    --shadow-archive: 0 10px 34px -14px hsl(0 0% 0% / 0.55);
 
     --sidebar-background: 155 22% 10%;
     --sidebar-foreground: 60 15% 90%;
