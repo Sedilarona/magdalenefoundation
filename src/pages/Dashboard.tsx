@@ -118,7 +118,7 @@ const Dashboard = () => {
     const load = async () => {
       const [{ data: members }, { count: storyCount }, { data: anns }, { data: media }] =
         await Promise.all([
-          supabase.from("family_members").select("id, generation, birth_month, photo_url"),
+          supabase.from("family_members").select("id, generation_level, birth_month, photo_url"),
           supabase.from("tales").select("id", { count: "exact", head: true }),
           supabase
             .from("announcements")
@@ -127,20 +127,23 @@ const Dashboard = () => {
             .order("event_date", { ascending: true }),
           supabase
             .from("media_uploads")
-            .select("id, title, created_at")
+            .select("id, file_name, caption, created_at")
             .order("created_at", { ascending: false })
             .limit(4),
         ]);
 
       if (cancelled) return;
 
-      const rows = members ?? [];
+      const rows = (members ?? []) as unknown as {
+        id: string;
+        generation_level: number | null;
+        birth_month: number | null;
+        photo_url: string | null;
+      }[];
       const generations = new Set(
-        rows.map((r: { generation: number | null }) => r.generation).filter((g) => g != null),
+        rows.map((r) => r.generation_level).filter((g) => g != null),
       ).size;
-      const withDetail = rows.filter(
-        (r: { birth_month: number | null; photo_url: string | null }) => r.birth_month || r.photo_url,
-      ).length;
+      const withDetail = rows.filter((r) => r.birth_month || r.photo_url).length;
 
       setStats({
         members: rows.length,
@@ -150,9 +153,14 @@ const Dashboard = () => {
       });
       setAnnouncements(anns ?? []);
       setActivity(
-        (media ?? []).map((m: { id: string; title: string | null; created_at: string }) => ({
+        ((media ?? []) as unknown as {
+          id: string;
+          file_name: string | null;
+          caption: string | null;
+          created_at: string;
+        }[]).map((m) => ({
           id: m.id,
-          label: m.title || "New memory added",
+          label: m.caption || m.file_name || "New memory added",
           when: new Date(m.created_at).toLocaleDateString(undefined, {
             month: "short",
             day: "numeric",
