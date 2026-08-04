@@ -170,10 +170,10 @@ declare global {
 const LocateFamily = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [query, setQuery] = useState("");
-  const [showWhere, setShowWhere] = useState(false);
   const [openPlace, setOpenPlace] = useState<string | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [livePlaces, setLivePlaces] = useState<FamilyPlace[]>(familyPlaces);
   const mapDiv = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -184,6 +184,39 @@ const LocateFamily = () => {
   useEffect(() => {
     if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
+
+  // Keep the list in sync with locations members set on their profiles
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase.from("profiles").select("full_name, location");
+      if (!data) return;
+      const next = familyPlaces.map((p) => ({ ...p, people: [...p.people] }));
+      data.forEach((p: any) => {
+        const loc = (p.location ?? "").trim();
+        if (!loc || !p.full_name) return;
+        const match = next.find(
+          (e) =>
+            loc.toLowerCase().includes(e.place.toLowerCase()) ||
+            loc.toLowerCase().includes(e.area.toLowerCase()),
+        );
+        if (match) {
+          if (!match.people.some((n) => n.toLowerCase().includes(p.full_name.toLowerCase()))) {
+            match.people.push(p.full_name);
+          }
+        } else {
+          const existing = next.find((e) => e.place.toLowerCase() === loc.toLowerCase());
+          if (existing) {
+            if (!existing.people.includes(p.full_name)) existing.people.push(p.full_name);
+          } else {
+            next.push({ place: loc, area: loc, lat: -24.6282, lng: 25.9231, people: [p.full_name] });
+          }
+        }
+      });
+      setLivePlaces(next);
+    };
+    load();
+  }, [user]);
+
 
   // Load Google Maps JS API
   useEffect(() => {
