@@ -1,52 +1,30 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard,
-  GitBranch,
-  BookHeart,
-  Library,
-  Gamepad2,
-  FolderOpen,
-  Sparkles,
-  Wrench,
-  Menu,
-  X,
-  Bell,
-  Settings,
-  LogOut,
-  User,
-  ChevronDown,
-  Cake,
-  MapPin,
-  Briefcase,
-  Gift,
-  Calendar,
-  TrendingUp,
   Users,
-  Heart,
+  Layers,
+  BookHeart,
+  GitBranch,
+  Sparkles,
+  Bell,
+  CalendarDays,
+  MapPin,
+  Clock,
+  Activity,
+  Cake,
+  ChevronRight,
   Loader2,
+  Search,
+  Milestone,
 } from "lucide-react";
-import { Logo } from "@/components/Logo";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { BottomNav } from "@/components/BottomNav";
+import { FamilyCrest, CrestWatermark } from "@/components/FamilyCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
-
-// Sidebar navigation items
-const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
-  { icon: GitBranch, label: "Family Tree", href: "/family-tree" },
-  { icon: BookHeart, label: "Our Tales", href: "/tales" },
-  { icon: Library, label: "Family Memories", href: "/library" },
-  { icon: Gamepad2, label: "Family Tricks", href: "/games" },
-  { icon: FolderOpen, label: "Family Resources", href: "/resources" },
-  { icon: MapPin, label: "Locate Family", href: "/locate-family" },
-  { icon: Wrench, label: "Family Services", href: "/family-services" },
-  { icon: Sparkles, label: "MAGGIE", href: "/maggie" },
-];
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Announcement {
   id: string;
@@ -57,471 +35,404 @@ interface Announcement {
   announcement_type: string;
 }
 
-// Mock family stats
-const familyStats = [
-  { icon: Users, label: "Family Members", value: "80+" },
-  { icon: BookHeart, label: "Stories Shared", value: "89" },
-  { icon: Heart, label: "Connections Made", value: "234" },
+const MILESTONES = [
+  { year: "1932", label: "Poane George Bodilenyane born", place: "Serowe", icon: Milestone },
+  { year: "1958", label: "Marriage of RaTeko & Mma Teko", place: "Serowe", icon: Milestone },
+  { year: "1971", label: "The family settles in Gaborone", place: "Gaborone", icon: MapPin },
+  { year: "2024", label: "Magdalene Foundation founded", place: "Botswana", icon: Sparkles },
 ];
 
+const MAGGIE_PROMPTS = [
+  "Who am I related to?",
+  "Explain my lineage.",
+  "Show our clan history.",
+  "Find ancestors from Serowe.",
+];
+
+const greetingFor = (hour: number) =>
+  hour < 12 ? "Good Morning" : hour < 17 ? "Good Afternoon" : "Good Evening";
+
+const Card = ({
+  children,
+  className = "",
+  delay = 0,
+  id,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  id?: string;
+}) => (
+  <motion.section
+    id={id}
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.45, delay, ease: "easeOut" }}
+    className={`rounded-[20px] border border-gold/20 bg-card p-5 shadow-[var(--shadow-archive)] ${className}`}
+  >
+    {children}
+  </motion.section>
+);
+
+const SectionTitle = ({
+  icon: Icon,
+  children,
+  to,
+}: {
+  icon: React.ElementType;
+  children: React.ReactNode;
+  to?: string;
+}) => (
+  <div className="mb-4 flex items-center justify-between gap-3">
+    <h2 className="flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-foreground">
+      <Icon className="h-[18px] w-[18px] text-gold" aria-hidden="true" />
+      {children}
+    </h2>
+    {to && (
+      <Link
+        to={to}
+        className="flex items-center gap-0.5 rounded-md text-xs font-medium text-muted-foreground transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+      >
+        View all <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+      </Link>
+    )}
+  </div>
+);
+
 const Dashboard = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
-  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-  
-  const { user, profile, loading, signOut } = useAuth();
-  const { toast } = useToast();
+  const { user, profile, loading } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if not authenticated
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [stats, setStats] = useState({ members: 0, generations: 0, stories: 0, completion: 0 });
+  const [activity, setActivity] = useState<{ id: string; label: string; when: string }[]>([]);
+  const [maggieQuery, setMaggieQuery] = useState("");
+
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
+    if (!loading && !user) navigate("/login");
   }, [user, loading, navigate]);
 
   useEffect(() => {
-    const fetchAnnouncements = async () => {
-      const { data } = await supabase
-        .from("announcements")
-        .select("*")
-        .eq("is_active", true)
-        .order("event_date", { ascending: true });
-      if (data) setAnnouncements(data);
+    let cancelled = false;
+
+    const load = async () => {
+      const [{ data: members }, { count: storyCount }, { data: anns }, { data: media }] =
+        await Promise.all([
+          supabase.from("family_members").select("id, generation, birth_month, photo_url"),
+          supabase.from("tales").select("id", { count: "exact", head: true }),
+          supabase
+            .from("announcements")
+            .select("*")
+            .eq("is_active", true)
+            .order("event_date", { ascending: true }),
+          supabase
+            .from("media_uploads")
+            .select("id, title, created_at")
+            .order("created_at", { ascending: false })
+            .limit(4),
+        ]);
+
+      if (cancelled) return;
+
+      const rows = members ?? [];
+      const generations = new Set(
+        rows.map((r: { generation: number | null }) => r.generation).filter((g) => g != null),
+      ).size;
+      const withDetail = rows.filter(
+        (r: { birth_month: number | null; photo_url: string | null }) => r.birth_month || r.photo_url,
+      ).length;
+
+      setStats({
+        members: rows.length,
+        generations,
+        stories: storyCount ?? 0,
+        completion: rows.length ? Math.round((withDetail / rows.length) * 100) : 0,
+      });
+      setAnnouncements(anns ?? []);
+      setActivity(
+        (media ?? []).map((m: { id: string; title: string | null; created_at: string }) => ({
+          id: m.id,
+          label: m.title || "New memory added",
+          when: new Date(m.created_at).toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+          }),
+        })),
+      );
     };
-    fetchAnnouncements();
+
+    load().catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  const handleSignOut = async () => {
-    await signOut();
-    toast({
-      title: "Signed out",
-      description: "You have been signed out successfully.",
-    });
-    navigate("/");
-  };
+  const now = new Date();
+  const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
+  const firstName = (profile?.full_name || user?.email?.split("@")[0] || "Friend").split(" ")[0];
 
-  const getAnnouncementIcon = (type: string) => {
-    return type === "birthday" ? Cake : Calendar;
-  };
+  const upcoming = announcements.filter((a) => a.event_date && new Date(a.event_date) >= new Date());
+  const nextEvent = upcoming[0];
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "";
-    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  };
-
-  // Show loading while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex min-h-dvh items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-gold" aria-label="Loading" />
       </div>
     );
   }
+  if (!user) return null;
 
-  // Don't render if not authenticated
-  if (!user) {
-    return null;
-  }
-
-  const displayName = profile?.full_name || user.email?.split("@")[0] || "User";
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const statCards = [
+    { icon: Users, label: "Family Members", value: stats.members || "—" },
+    { icon: Layers, label: "Generations", value: stats.generations || "—" },
+    { icon: BookHeart, label: "Stories Preserved", value: stats.stories || "—" },
+    { icon: GitBranch, label: "Tree Complete", value: `${stats.completion}%` },
+  ];
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <AnimatePresence mode="wait">
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ x: -280, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -280, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed lg:relative z-40 w-[280px] h-screen bg-sidebar border-r border-sidebar-border flex flex-col"
-          >
-            {/* Sidebar Header */}
-            <div className="p-6 border-b border-sidebar-border">
-              <Logo size="md" />
-            </div>
-
-            {/* Navigation */}
-            <nav className="flex-1 p-4 overflow-y-auto">
-              <ul className="space-y-1">
-                {navItems.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      to={item.href}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                        item.href === "/dashboard"
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                          : ""
-                      }`}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.label}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-
-            {/* Sidebar Footer */}
-            <div className="p-4 border-t border-sidebar-border">
-              <Link
-                to="/settings"
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
-              >
-                <Settings className="w-5 h-5" />
-                <span>Settings</span>
-              </Link>
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-foreground/20 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
-        {/* Top Header */}
-        <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
-          <div className="flex items-center justify-between px-4 lg:px-8 h-16">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-              >
-                {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-              <h1 className="font-display text-xl font-semibold text-foreground hidden sm:block">
-                Dashboard
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-3">
-              {/* Notifications */}
-              <button
-                onClick={() => setNotifOpen(true)}
-                className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
-                aria-label="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-                {announcements.length > 0 && (
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-                )}
-              </button>
-
-              {/* User Menu */}
-              <div className="relative">
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 p-2 hover:bg-muted rounded-lg transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-primary-foreground text-sm font-semibold">
-                    {initials}
-                  </div>
-                  <span className="hidden md:block text-sm font-medium text-foreground">
-                    {displayName}
-                  </span>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
-                </button>
-
-                <AnimatePresence>
-                  {userMenuOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-56 bg-popover border border-border rounded-xl shadow-elevated overflow-hidden z-50"
-                    >
-                      <div className="p-3 border-b border-border">
-                        <p className="font-medium text-foreground">{displayName}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                      <div className="p-2">
-                        <Link
-                          to="/profile"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
-                        >
-                          <User className="w-4 h-4" />
-                          My Profile
-                        </Link>
-                        <Link
-                          to="/contributions"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
-                        >
-                          <TrendingUp className="w-4 h-4" />
-                          My Contributions
-                        </Link>
-                        <Link
-                          to="/settings"
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
-                        >
-                          <Settings className="w-4 h-4" />
-                          Settings
-                        </Link>
-                      </div>
-                      <div className="p-2 border-t border-border">
-                        <button
-                          onClick={handleSignOut}
-                          className="flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-muted rounded-lg transition-colors w-full"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+    <div className="min-h-dvh bg-background pb-28">
+      <main className="mx-auto w-full max-w-2xl px-4">
+        {/* Header */}
+        <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
+          <CrestWatermark className="pointer-events-none absolute -right-10 -top-6 h-56 w-56 text-gold opacity-[0.08]" />
+          <div className="relative flex flex-col items-center text-center">
+            <FamilyCrest size={76} />
+            <p className="mt-3 font-display text-2xl font-semibold tracking-wide text-ivory">
+              Poane Family Circle
+            </p>
+            <span className="mt-2 h-px w-16 bg-gold/60" aria-hidden="true" />
+            <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory/80">
+              {greeting}, {firstName}.
+            </h1>
+            <p className="mt-1 font-display text-xs italic text-gold-soft">
+              Sethare se segologolo, sethare se setona.
+            </p>
           </div>
         </header>
 
-        {/* Dashboard Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
-          {/* Welcome Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <h2 className="font-display text-2xl lg:text-3xl font-bold text-foreground mb-2">
-              Welcome back, {displayName.split(" ")[0]}!
-            </h2>
-            <p className="text-muted-foreground">
-              Here's what's happening in your family circle today.
-            </p>
-          </motion.div>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            {familyStats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="bg-card rounded-2xl p-6 border border-sage-100 shadow-card"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center">
-                    <stat.icon className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Announcements */}
+        {/* Stats */}
+        <div className="mt-5 grid grid-cols-2 gap-3">
+          {statCards.map((s, i) => (
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              key={s.label}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="lg:col-span-2 bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden"
+              transition={{ duration: 0.4, delay: i * 0.06 }}
+              className="rounded-[18px] border border-gold/20 bg-card p-4 shadow-[var(--shadow-archive)]"
             >
-              <div className="p-6 border-b border-border">
-                <h3 className="font-display text-lg font-semibold text-foreground flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-primary" />
-                  Announcements
-                </h3>
-              </div>
-              <div className="p-4 space-y-3">
-                {announcements.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-6">
-                    No announcements yet.
-                  </p>
-                )}
-                {announcements.map((announcement, index) => {
-                  const Icon = getAnnouncementIcon(announcement.announcement_type);
-                  const dateLabel = announcement.event_date
-                    ? new Date(announcement.event_date).toLocaleDateString(undefined, {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "";
-                  return (
-                    <motion.div
-                      key={announcement.id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.3 + index * 0.1 }}
-                      className="flex items-start gap-4 p-4 bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors cursor-pointer"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground">{announcement.title}</h4>
-                        <p className="text-sm text-muted-foreground">{announcement.description}</p>
-                        {announcement.location && (
-                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                            <MapPin className="w-3 h-3" />
-                            {announcement.location}
-                          </p>
-                        )}
-                      </div>
-                      {dateLabel && (
-                        <span className="text-xs text-muted-foreground whitespace-nowrap">
-                          {dateLabel}
-                        </span>
-                      )}
-                    </motion.div>
-                  );
-                })}
-              </div>
-              <div className="p-4 border-t border-border">
-                <Button variant="ghost" className="w-full">
-                  View All Announcements
-                </Button>
-              </div>
+              <s.icon className="h-5 w-5 text-gold" aria-hidden="true" />
+              <p className="mt-3 font-display text-2xl font-semibold text-foreground">{s.value}</p>
+              <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
             </motion.div>
-
-            {/* User Profile Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden"
-            >
-              <div className="bg-gradient-to-br from-sage-500 to-sage-600 p-6 text-center">
-                <div className="w-20 h-20 mx-auto rounded-full bg-primary-foreground/20 flex items-center justify-center text-primary-foreground text-2xl font-bold mb-3">
-                  {initials}
-                </div>
-                <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                  {displayName}
-                </h3>
-                <p className="text-primary-foreground/70 text-sm">
-                  {profile?.generation || "New Member"}
-                </p>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">
-                    {profile?.location || "Location not set"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Briefcase className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">
-                    {profile?.occupation || "Occupation not set"}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Gift className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">
-                    {profile?.contribution_points || 0} points
-                  </span>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                  <Link to="/profile">
-                    <Button variant="outline" className="w-full">
-                      Edit Profile
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Quick Actions */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="mt-8 bg-gradient-to-r from-sage-100 to-earth-100 rounded-2xl p-6 border border-sage-200"
-          >
-            <h3 className="font-display text-lg font-semibold text-foreground mb-4">
-              Quick Actions
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { icon: BookHeart, label: "Record a Story", href: "/tales" },
-                { icon: GitBranch, label: "View Family Tree", href: "/family-tree" },
-                { icon: MapPin, label: "Locate Family", href: "/locate-family" },
-                { icon: Sparkles, label: "Ask MAGGIE", href: "/maggie" },
-              ].map((action) => (
-                <Link
-                  key={action.label}
-                  to={action.href}
-                  className="flex flex-col items-center gap-2 p-4 bg-card rounded-xl hover:shadow-soft transition-all hover:-translate-y-1"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <action.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground text-center">
-                    {action.label}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </motion.div>
-        
-        <div className="mt-6">
-          <BirthdaysPanel />
+          ))}
         </div>
-</main>
-      </div>
 
-      {/* Notifications Sheet */}
-      <Sheet open={notifOpen} onOpenChange={setNotifOpen}>
-        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Bell className="w-5 h-5 text-primary" /> Announcements
-            </SheetTitle>
-          </SheetHeader>
-          <div className="mt-6 space-y-3">
-            {announcements.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-6">No announcements yet.</p>
-            )}
-            {announcements.map((a) => {
-              const Icon = getAnnouncementIcon(a.announcement_type);
-              return (
-                <div key={a.id} className="flex items-start gap-3 p-3 bg-sage-50 rounded-xl">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-foreground text-sm">{a.title}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{a.description}</p>
-                    {a.event_date && (
-                      <p className="text-xs text-muted-foreground mt-1">{formatDate(a.event_date)}</p>
-                    )}
-                    {a.location && (
-                      <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {a.location}
-                      </p>
-                    )}
-                  </div>
+        {/* Timeline + Events */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Card delay={0.08}>
+            <SectionTitle icon={Clock} to="/family-tree">
+              Family Timeline
+            </SectionTitle>
+            <ol className="space-y-4">
+              {MILESTONES.map((m) => (
+                <li key={m.year} className="relative pl-5">
+                  <span
+                    className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gold"
+                    aria-hidden="true"
+                  />
+                  <span className="absolute left-[3px] top-4 h-full w-px bg-gold/25" aria-hidden="true" />
+                  <p className="font-display text-sm font-semibold text-foreground">{m.year}</p>
+                  <p className="text-sm text-muted-foreground">{m.label}</p>
+                  <p className="text-xs text-muted-foreground/80">{m.place}</p>
+                </li>
+              ))}
+            </ol>
+          </Card>
+
+          <Card delay={0.14} id="events">
+            <SectionTitle icon={CalendarDays}>Upcoming Events</SectionTitle>
+            <div className="overflow-hidden rounded-2xl border border-gold/20">
+              <div className="relative h-28 bg-[var(--gradient-crest)]">
+                <CrestWatermark className="absolute inset-0 mx-auto h-28 text-gold opacity-20" />
+              </div>
+              <div className="p-4">
+                <p className="font-display text-base font-semibold text-foreground">
+                  {nextEvent?.title ?? "Family Gathering"}
+                </p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <CalendarDays className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
+                  {nextEvent?.event_date
+                    ? new Date(nextEvent.event_date).toLocaleDateString(undefined, {
+                        weekday: "short",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "Date to be announced"}
+                </p>
+                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <MapPin className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
+                  {nextEvent?.location ?? "Serowe, Botswana"}
+                </p>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {upcoming.length} upcoming · RSVPs open
+                  </span>
+                  <Button size="sm" className="h-9 rounded-full bg-gold text-gold-foreground hover:bg-gold/90">
+                    RSVP
+                  </Button>
                 </div>
-              );
-            })}
-          </div>
-        </SheetContent>
-      </Sheet>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Announcements */}
+        <Card className="mt-4" delay={0.18}>
+          <SectionTitle icon={Bell}>Recent Announcements</SectionTitle>
+          {announcements.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">
+              No announcements yet — the archive is quiet today.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {announcements.slice(0, 4).map((a) => (
+                <li
+                  key={a.id}
+                  className="flex items-start gap-3 rounded-2xl border border-border/60 bg-muted/40 p-3"
+                >
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/15">
+                    {a.announcement_type === "birthday" ? (
+                      <Cake className="h-4 w-4 text-gold" aria-hidden="true" />
+                    ) : (
+                      <Bell className="h-4 w-4 text-gold" aria-hidden="true" />
+                    )}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-foreground">{a.title}</p>
+                    <p className="text-sm text-muted-foreground">{a.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        {/* Ask MAGGIE */}
+        <Card className="mt-4 bg-[var(--gradient-crest)] text-ivory" delay={0.22}>
+          <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-ivory">
+            <Sparkles className="h-[18px] w-[18px] text-gold" aria-hidden="true" />
+            Ask MAGGIE
+          </h2>
+          <p className="mt-1 text-sm text-ivory/75">
+            Your matriarch's memory — lineage, clan history and kinship.
+          </p>
+          <form
+            className="mt-4 flex items-center gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              navigate(`/maggie?q=${encodeURIComponent(maggieQuery)}`);
+            }}
+          >
+            <label htmlFor="maggie-q" className="sr-only">
+              Ask MAGGIE a question
+            </label>
+            <Input
+              id="maggie-q"
+              value={maggieQuery}
+              onChange={(e) => setMaggieQuery(e.target.value)}
+              placeholder="Ask about your family…"
+              className="h-11 rounded-full border-gold/30 bg-ivory/10 text-ivory placeholder:text-ivory/50 focus-visible:ring-gold"
+            />
+            <Button
+              type="submit"
+              size="icon"
+              aria-label="Ask MAGGIE"
+              className="h-11 w-11 shrink-0 rounded-full bg-gold text-gold-foreground hover:bg-gold/90"
+            >
+              <Search className="h-4 w-4" aria-hidden="true" />
+            </Button>
+          </form>
+          <ul className="mt-3 flex flex-wrap gap-2">
+            {MAGGIE_PROMPTS.map((p) => (
+              <li key={p}>
+                <Link
+                  to={`/maggie?q=${encodeURIComponent(p)}`}
+                  className="inline-flex rounded-full border border-gold/40 px-3 py-1.5 text-xs text-ivory/90 transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                >
+                  {p}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        {/* On this day + activity */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <Card delay={0.26}>
+            <SectionTitle icon={Clock}>On This Day</SectionTitle>
+            <p className="font-display text-sm text-foreground">
+              {now.toLocaleDateString(undefined, { month: "long", day: "numeric" })}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              The archive holds no recorded event for today yet. Add a memory and it will appear here
+              for generations to come.
+            </p>
+            <Link
+              to="/tales"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-gold hover:underline"
+            >
+              Record a story <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
+          </Card>
+
+          <Card delay={0.3}>
+            <SectionTitle icon={Activity} to="/library">
+              Recent Family Activity
+            </SectionTitle>
+            {activity.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No recent contributions.</p>
+            ) : (
+              <ul className="space-y-3">
+                {activity.map((a) => (
+                  <li key={a.id} className="flex items-center justify-between gap-3">
+                    <span className="truncate text-sm text-foreground">{a.label}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+
+        {/* Birthdays */}
+        <Card className="mt-4" delay={0.34}>
+          <SectionTitle icon={Cake}>Birthdays This Month</SectionTitle>
+          <BirthdaysPanel compact />
+        </Card>
+
+        {/* Map snapshot */}
+        <Card className="mt-4" delay={0.38}>
+          <SectionTitle icon={MapPin} to="/locate-family">
+            Family Map Snapshot
+          </SectionTitle>
+          <Link
+            to="/locate-family"
+            className="block overflow-hidden rounded-2xl border border-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+          >
+            <div className="relative h-36 bg-[var(--gradient-crest)]">
+              <CrestWatermark className="absolute inset-0 mx-auto h-36 text-gold opacity-[0.12]" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-ivory">
+                <MapPin className="h-6 w-6 text-gold" aria-hidden="true" />
+                <p className="font-display text-sm">Serowe · Gaborone · Palapye · Francistown</p>
+                <p className="text-xs text-ivory/70">Tap to explore where the family lives</p>
+              </div>
+            </div>
+          </Link>
+        </Card>
+      </main>
+
+      <BottomNav />
     </div>
   );
 };
