@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   Loader2,
   Search,
-  Users,
   ChevronRight,
 } from "lucide-react";
 import { Logo } from "@/components/Logo";
