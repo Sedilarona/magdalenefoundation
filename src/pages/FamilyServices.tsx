@@ -213,6 +213,13 @@ const FamilyServices = () => {
             </div>
           </motion.div>
 
+          <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+            <p className="font-display font-semibold text-foreground">
+              Remember to pay family: Everytime and in full
+            </p>
+            <p className="text-sm text-muted-foreground italic">(Madi a lothanya)</p>
+          </div>
+
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input

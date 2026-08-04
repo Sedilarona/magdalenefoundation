@@ -170,8 +170,8 @@ const resources: Resource[] = [
     },
   },
   {
-    id: "rickbuns",
-    title: "Traditional Rickbuns",
+    id: "rockbuns",
+    title: "Traditional Rockbuns",
     description: "Rustic, craggy family buns — quick to make and perfect with tea. Makes 10.",
     category: "recipes",
     icon: ChefHat,

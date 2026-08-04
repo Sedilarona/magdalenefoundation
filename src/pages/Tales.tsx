@@ -140,8 +140,99 @@ Ishmael's descendants
           |
       Prophet Muhammad
           |
-         Islam`,
+          Islam`,
     createdAt: "Faith & Lineage",
+  },
+  {
+    id: "tale-5",
+    title: "Words of Our Cousins Through Abraham",
+    category: "Wisdom",
+    content: `"My dear grandchildren, every family has words that become treasures. If you ever meet a Muslim friend or wish to understand the faith of our cousins through Abraham, these are some of the beautiful words you will hear. Learn them, not to mock them or fear them, but to understand them with respect.
+
+The first and greatest statement is:
+
+'La ilaha illa Allah, Muhammadur Rasul Allah.'
+
+It means:
+
+'There is no god except Allah, and Muhammad is the Messenger of Allah.'
+
+This is the declaration of faith. It is the heart of Islam.
+
+When Muslims begin something important, they often say:
+
+'Bismillah ir-Rahman ir-Rahim.'
+
+It means:
+
+'In the name of Allah, the Most Compassionate, the Most Merciful.'
+
+When they wish to remind themselves that God is greater than anything else, they say:
+
+'Allahu Akbar.'
+
+It means:
+
+'Allah is the Greatest.'
+
+When they are thankful for food, good news, or life's blessings, they say:
+
+'Alhamdulillah.'
+
+It means:
+
+'Praise be to Allah.'
+
+When they admire something beautiful or celebrate another person's blessing, they say:
+
+'Masha'Allah.'
+
+It means:
+
+'What Allah has willed.'
+
+When speaking about tomorrow or making plans, they say:
+
+'Insha'Allah.'
+
+It means:
+
+'If Allah wills.'
+
+When they realize they have done wrong and ask God for mercy, they say:
+
+'Astaghfirullah.'
+
+It means:
+
+'I seek forgiveness from Allah.'
+
+When they remember God's perfection and holiness, they say:
+
+'SubhanAllah.'
+
+It means:
+
+'Glory be to Allah.'
+
+And when Muslims greet one another, they say:
+
+'As-salamu Alaikum.'
+
+It means:
+
+'Peace be upon you.'
+
+The reply is:
+
+'Wa Alaikum As-salam.'
+
+It means:
+
+'And peace be upon you too.'
+
+Remember, my dear children, learning another person's words is the first step to understanding their heart. We may not all believe the same things, but we can always learn about one another with respect, kindness, and honesty. Knowledge builds bridges where ignorance builds walls."`,
+    createdAt: "Faith & Understanding",
   },
 ];
 
