@@ -213,8 +213,14 @@ const Dashboard = () => {
   const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
   const firstName = (profile?.full_name || user?.email?.split("@")[0] || "Friend").split(" ")[0];
 
-  const upcoming = announcements.filter((a) => a.event_date && new Date(a.event_date) >= new Date());
+  const upcoming = [
+    ...announcements
+      .filter((a) => a.event_date && new Date(a.event_date) >= new Date())
+      .map((a) => ({ date: a.event_date as string, title: a.title, location: a.location ?? "Botswana" })),
+    ...FAMILY_EVENTS.filter((e) => new Date(e.date) >= new Date()),
+  ].sort((a, b) => a.date.localeCompare(b.date));
   const nextEvent = upcoming[0];
+
 
   if (loading) {
     return (
