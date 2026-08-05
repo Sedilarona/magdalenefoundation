@@ -310,11 +310,12 @@ const Dashboard = () => {
                 </p>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
-                  {nextEvent?.event_date
-                    ? new Date(nextEvent.event_date).toLocaleDateString(undefined, {
+                  {nextEvent?.date
+                    ? new Date(nextEvent.date).toLocaleDateString(undefined, {
                         weekday: "short",
                         month: "long",
                         day: "numeric",
+                        year: "numeric",
                       })
                     : "Date to be announced"}
                 </p>
@@ -332,8 +333,32 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
+            {upcoming.length > 1 && (
+              <ul className="mt-3 space-y-2">
+                {upcoming.slice(1, 5).map((e) => (
+                  <li
+                    key={`${e.date}-${e.title}`}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/40 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{e.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{e.location}</p>
+                    </div>
+                    <span className="shrink-0 text-xs font-medium text-gold">
+                      {new Date(e.date).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        year: "2-digit",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
+
 
         {/* Announcements */}
         <Card className="mt-4" delay={0.18}>
