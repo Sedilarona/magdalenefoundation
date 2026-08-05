@@ -463,11 +463,11 @@ const Dashboard = () => {
             <SectionTitle icon={Activity} to="/library">
               Recent Family Activity
             </SectionTitle>
-            {activity.length === 0 ? (
+            {activity.length === 0 && HERITAGE_ACTIVITY.length === 0 ? (
               <p className="text-sm text-muted-foreground">No recent contributions.</p>
             ) : (
               <ul className="space-y-3">
-                {activity.map((a) => (
+                {[...activity, ...HERITAGE_ACTIVITY].map((a) => (
                   <li key={a.id} className="flex items-center justify-between gap-3">
                     <span className="truncate text-sm text-foreground">{a.label}</span>
                     <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
