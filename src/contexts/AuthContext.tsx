@@ -125,9 +125,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    // Clear local state first so no previous member's data can linger in the UI.
     setProfile(null);
+    setUser(null);
+    setSession(null);
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      // ignore — local state is already cleared
+    }
+    window.location.href = "/login";
   };
+
 
   const refreshProfile = async () => {
     if (user) await fetchProfile(user.id);
