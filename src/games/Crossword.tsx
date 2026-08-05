@@ -233,8 +233,23 @@ const Crossword = () => {
               {levelIdx + 1 < levelOrder.length ? (
                 <Button onClick={nextLevel} className="mt-3 gap-2">Next Level <ArrowRight className="w-4 h-4" /></Button>
               ) : (
-                <p className="text-sm text-muted-foreground mt-2">You've completed all levels — Ke a leboga!</p>
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    You've completed every round — Ke a leboga!
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setLevelOrder(shuffle(LEVELS));
+                      setLevelIdx(0);
+                      reset();
+                    }}
+                    className="mt-3 gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Shuffle new puzzles
+                  </Button>
+                </div>
               )}
+
             </div>
           )}
         </div>
