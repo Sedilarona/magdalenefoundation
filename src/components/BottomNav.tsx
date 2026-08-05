@@ -119,7 +119,25 @@ export const BottomNav = () => {
                   </Link>
                 </motion.div>
               ))}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: moreItems.length * 0.03 }}
+                className="col-span-2"
+              >
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    signOut();
+                  }}
+                  className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <LogOut className="h-5 w-5" aria-hidden="true" />
+                  Sign out{user?.email ? ` — ${user.email}` : ""}
+                </button>
+              </motion.div>
             </div>
+
           </AnimatePresence>
         </SheetContent>
       </Sheet>
