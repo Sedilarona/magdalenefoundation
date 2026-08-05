@@ -21,7 +21,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
-import { FamilyCrest, CrestWatermark } from "@/components/FamilyCrest";
+import { CrestWatermark } from "@/components/FamilyCrest";
+import { MagdaleneCrest } from "@/components/MagdaleneCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,18 @@ const MILESTONES = [
   { year: "1958", label: "Marriage of RaTeko & Mma Teko", place: "Serowe", icon: Milestone },
   { year: "1971", label: "The family settles in Gaborone", place: "Gaborone", icon: MapPin },
   { year: "2024", label: "Magdalene Foundation founded", place: "Botswana", icon: Sparkles },
+];
+
+/** Confirmed family events kept in the archive alongside database announcements. */
+const FAMILY_EVENTS = [
+  { date: "2026-10-24", title: "Tefo Kgafela Wedding — Patlo", location: "Ramonaka Ward" },
+  { date: "2026-11-27", title: "Tefo Kgafela Wedding — Magadi & Pholoso", location: "Ramonaka" },
+  { date: "2026-11-28", title: "Wedding Celebration", location: "Ramonaka" },
+  { date: "2026-11-29", title: "Wedding Celebration", location: "Mathubudukwane" },
+];
+
+const HERITAGE_ACTIVITY = [
+  { id: "reunion-2024", label: "Family reunion in Mmathudukwane, hosted by the Kgafela family", when: "2024" },
 ];
 
 const MAGGIE_PROMPTS = [
@@ -205,12 +218,12 @@ const Dashboard = () => {
         <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
           <CrestWatermark className="pointer-events-none absolute -right-10 -top-6 h-56 w-56 text-gold opacity-[0.08]" />
           <div className="relative flex flex-col items-center text-center">
-            <FamilyCrest size={76} />
+            <MagdaleneCrest size={84} />
             <p className="mt-3 font-display text-2xl font-semibold tracking-wide text-ivory">
               Poane Family Circle
             </p>
             <span className="mt-2 h-px w-16 bg-gold/60" aria-hidden="true" />
-            <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory/80">
+            <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory">
               {greeting}, {firstName}.
             </h1>
             <p className="mt-1 font-display text-xs italic text-gold-soft">
@@ -252,7 +265,7 @@ const Dashboard = () => {
                   <span className="absolute left-[3px] top-4 h-full w-px bg-gold/25" aria-hidden="true" />
                   <p className="font-display text-sm font-semibold text-foreground">{m.year}</p>
                   <p className="text-sm text-muted-foreground">{m.label}</p>
-                  <p className="text-xs text-muted-foreground/80">{m.place}</p>
+                  <p className="text-xs text-muted-foreground">{m.place}</p>
                 </li>
               ))}
             </ol>
@@ -332,7 +345,7 @@ const Dashboard = () => {
             <Sparkles className="h-[18px] w-[18px] text-gold" aria-hidden="true" />
             Ask MAGGIE
           </h2>
-          <p className="mt-1 text-sm text-ivory/75">
+          <p className="mt-1 text-sm text-ivory/90">
             Your matriarch's memory — lineage, clan history and kinship.
           </p>
           <form
@@ -350,7 +363,7 @@ const Dashboard = () => {
               value={maggieQuery}
               onChange={(e) => setMaggieQuery(e.target.value)}
               placeholder="Ask about your family…"
-              className="h-11 rounded-full border-gold/30 bg-ivory/10 text-ivory placeholder:text-ivory/50 focus-visible:ring-gold"
+              className="h-11 rounded-full border-gold/30 bg-ivory/10 text-ivory placeholder:text-ivory/70 focus-visible:ring-gold"
             />
             <Button
               type="submit"
@@ -366,7 +379,7 @@ const Dashboard = () => {
               <li key={p}>
                 <Link
                   to={`/maggie?q=${encodeURIComponent(p)}`}
-                  className="inline-flex rounded-full border border-gold/40 px-3 py-1.5 text-xs text-ivory/90 transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                  className="inline-flex rounded-full border border-gold/40 px-3 py-1.5 text-xs text-ivory transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                 >
                   {p}
                 </Link>
@@ -433,7 +446,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-ivory">
                 <MapPin className="h-6 w-6 text-gold" aria-hidden="true" />
                 <p className="font-display text-sm">Serowe · Gaborone · Palapye · Francistown</p>
-                <p className="text-xs text-ivory/70">Tap to explore where the family lives</p>
+                <p className="text-xs text-ivory/85">Tap to explore where the family lives</p>
               </div>
             </div>
           </Link>
