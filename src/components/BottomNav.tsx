@@ -17,7 +17,9 @@ import {
   Trophy,
   Settings,
   User,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const primaryItems = [
@@ -44,6 +46,7 @@ const moreItems = [
 export const BottomNav = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const { user, signOut } = useAuth();
 
   return (
     <>
