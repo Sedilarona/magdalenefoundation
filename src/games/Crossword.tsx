@@ -54,9 +54,41 @@ const LEVELS: Level[] = [
       { id: "l3w6", answer: "MOTHO", clue: "Setswana word for 'person'", row: 3, col: 2, dir: "down" },
     ],
   },
+  {
+    name: "Botswana Places",
+    words: [
+      { id: "l4w1", answer: "SEROWE", clue: "Village where our roots are planted", row: 0, col: 0, dir: "across" },
+      { id: "l4w2", answer: "SELEBI", clue: "___-Phikwe, the copper town", row: 0, col: 0, dir: "down" },
+      { id: "l4w3", answer: "PALAPYE", clue: "Central District town on the A1", row: 2, col: 0, dir: "across" },
+      { id: "l4w4", answer: "LOBATSE", clue: "Southern town known for its abattoir", row: 2, col: 4, dir: "down" },
+      { id: "l4w5", answer: "MAUN", clue: "Gateway to the Okavango Delta", row: 6, col: 0, dir: "across" },
+      { id: "l4w6", answer: "KANYE", clue: "Capital village of the Bangwaketse", row: 4, col: 2, dir: "across" },
+    ],
+  },
+  {
+    name: "Setswana Words",
+    words: [
+      { id: "l5w1", answer: "DUMELA", clue: "Setswana greeting — hello", row: 0, col: 0, dir: "across" },
+      { id: "l5w2", answer: "DIKGANG", clue: "Setswana for 'news'", row: 0, col: 0, dir: "down" },
+      { id: "l5w3", answer: "LERATO", clue: "Setswana for 'love'", row: 2, col: 0, dir: "across" },
+      { id: "l5w4", answer: "TSHEPO", clue: "Setswana for 'hope' (also a family name)", row: 2, col: 3, dir: "down" },
+      { id: "l5w5", answer: "SETHARE", clue: "Setswana for 'tree' — from our motto", row: 6, col: 0, dir: "across" },
+      { id: "l5w6", answer: "MADI", clue: "Setswana for 'money' (Madi a lothanya)", row: 4, col: 1, dir: "across" },
+    ],
+  },
 ];
 
 const GRID_SIZE = 12;
+
+/** Fisher-Yates — the puzzle order is reshuffled on every visit so no two sessions match. */
+const shuffle = <T,>(arr: T[]): T[] => {
+  const out = [...arr];
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+};
 
 const buildGrid = (words: WordDef[]) => {
   const grid: (Cell | null)[][] = Array.from({ length: GRID_SIZE }, () =>
@@ -91,13 +123,14 @@ const buildGrid = (words: WordDef[]) => {
 
 const Crossword = () => {
   const [levelIdx, setLevelIdx] = useState(0);
+  const [levelOrder, setLevelOrder] = useState<Level[]>(() => shuffle(LEVELS));
   const [dir, setDir] = useState<"across" | "down">("across");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
   const [victory, setVictory] = useState(false);
   const inputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
-  const { grid, words } = useMemo(() => buildGrid(LEVELS[levelIdx].words), [levelIdx]);
+  const { grid, words } = useMemo(() => buildGrid(levelOrder[levelIdx].words), [levelIdx, levelOrder]);
 
   const focusCell = (r: number, c: number) => {
     const el = inputRefs.current[`${r}-${c}`];
@@ -147,13 +180,13 @@ const Crossword = () => {
   };
   const reset = () => { setAnswers({}); setChecked(false); setVictory(false); };
   const nextLevel = () => {
-    if (levelIdx + 1 < LEVELS.length) { setLevelIdx(levelIdx + 1); reset(); }
+    if (levelIdx + 1 < levelOrder.length) { setLevelIdx(levelIdx + 1); reset(); }
   };
 
   useEffect(() => { reset(); }, [levelIdx]);
 
   return (
-    <GameShell title={`Family Crossword — ${LEVELS[levelIdx].name}`} subtitle="Fill answers. Press SPACE to jump to the next square.">
+    <GameShell title={`Family Crossword — Round ${levelIdx + 1}: ${levelOrder[levelIdx].name}`} subtitle="Fill answers. Press SPACE to jump to the next square.">
       <div className="grid lg:grid-cols-[auto_1fr] gap-6">
         <div className="bg-card rounded-2xl border border-sage-100 shadow-card p-4 mx-auto">
           <div className="grid gap-0.5" style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 2rem)` }}>
@@ -197,18 +230,33 @@ const Crossword = () => {
             <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/30 text-center">
               <Trophy className="w-6 h-6 text-primary mx-auto mb-1" />
               <p className="font-medium text-foreground">Level complete! 🎉</p>
-              {levelIdx + 1 < LEVELS.length ? (
+              {levelIdx + 1 < levelOrder.length ? (
                 <Button onClick={nextLevel} className="mt-3 gap-2">Next Level <ArrowRight className="w-4 h-4" /></Button>
               ) : (
-                <p className="text-sm text-muted-foreground mt-2">You've completed all levels — Ke a leboga!</p>
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground">
+                    You've completed every round — Ke a leboga!
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setLevelOrder(shuffle(LEVELS));
+                      setLevelIdx(0);
+                      reset();
+                    }}
+                    className="mt-3 gap-2"
+                  >
+                    <RotateCcw className="w-4 h-4" /> Shuffle new puzzles
+                  </Button>
+                </div>
               )}
+
             </div>
           )}
         </div>
 
         <div className="space-y-6">
           <div className="flex gap-2 flex-wrap">
-            {LEVELS.map((lv, i) => (
+            {levelOrder.map((lv, i) => (
               <Button
                 key={lv.name}
                 size="sm"

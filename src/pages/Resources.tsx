@@ -311,6 +311,25 @@ const Resources = () => {
     return matchesCategory && matchesSearch;
   });
 
+  // On the landing grid, all recipes collapse into a single "Recipes" button.
+  const recipeCount = resources.filter((r) => r.category === "recipes").length;
+  const collapseRecipes = !selectedCategory && !searchQuery;
+  const gridResources = collapseRecipes
+    ? [
+        ...filteredResources.filter((r) => r.category !== "recipes"),
+        {
+          id: "recipes-hub",
+          title: "Recipes",
+          description: `Family kitchen classics — ${recipeCount} recipes and counting. Tap to browse them all.`,
+          category: "recipes" as const,
+          icon: ChefHat,
+          language: "Family recipes",
+          available: true,
+          isHub: true,
+        },
+      ]
+    : filteredResources;
+
   const filteredHymns = hymns.filter((hymn) => 
     !searchQuery || 
     hymn.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -681,7 +700,7 @@ const Resources = () => {
 
               {/* Resources Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredResources.map((resource, index) => (
+                {gridResources.map((resource: any, index: number) => (
                   <motion.div
                     key={resource.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -709,7 +728,17 @@ const Resources = () => {
                       </p>
 
                       <div className="flex gap-2">
-                        {!resource.available && resource.externalUrl ? (
+                        {resource.isHub ? (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="flex-1 gap-2"
+                            onClick={() => setSelectedCategory("recipes")}
+                          >
+                            <ChefHat className="w-4 h-4" />
+                            Browse Recipes
+                          </Button>
+                        ) : !resource.available && resource.externalUrl ? (
                           <a
                             href={resource.externalUrl}
                             target="_blank"
@@ -743,7 +772,7 @@ const Resources = () => {
               </div>
 
               {/* Empty State */}
-              {filteredResources.length === 0 && (
+              {gridResources.length === 0 && (
                 <div className="text-center py-12">
                   <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="font-display text-lg font-semibold text-foreground mb-2">

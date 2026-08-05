@@ -21,7 +21,8 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
-import { FamilyCrest, CrestWatermark } from "@/components/FamilyCrest";
+import { CrestWatermark } from "@/components/FamilyCrest";
+import { MagdaleneCrest } from "@/components/MagdaleneCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,18 @@ const MILESTONES = [
   { year: "1958", label: "Marriage of RaTeko & Mma Teko", place: "Serowe", icon: Milestone },
   { year: "1971", label: "The family settles in Gaborone", place: "Gaborone", icon: MapPin },
   { year: "2024", label: "Magdalene Foundation founded", place: "Botswana", icon: Sparkles },
+];
+
+/** Confirmed family events kept in the archive alongside database announcements. */
+const FAMILY_EVENTS = [
+  { date: "2026-10-24", title: "Tefo Kgafela Wedding — Patlo", location: "Ramonaka Ward" },
+  { date: "2026-11-27", title: "Tefo Kgafela Wedding — Magadi & Pholoso", location: "Ramonaka" },
+  { date: "2026-11-28", title: "Wedding Celebration", location: "Ramonaka" },
+  { date: "2026-11-29", title: "Wedding Celebration", location: "Mathubudukwane" },
+];
+
+const HERITAGE_ACTIVITY = [
+  { id: "reunion-2024", label: "Family reunion in Mmathudukwane, hosted by the Kgafela family", when: "2024" },
 ];
 
 const MAGGIE_PROMPTS = [
@@ -170,17 +183,44 @@ const Dashboard = () => {
     };
 
     load().catch(() => undefined);
+
+    // Keep the dashboard numbers in sync with the rest of the app.
+    const refresh = () => load().catch(() => undefined);
+    const channel = supabase
+      .channel("dashboard-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "family_members" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tales" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "media_uploads" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, refresh)
+      .subscribe();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
     };
   }, []);
+
 
   const now = new Date();
   const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
   const firstName = (profile?.full_name || user?.email?.split("@")[0] || "Friend").split(" ")[0];
 
-  const upcoming = announcements.filter((a) => a.event_date && new Date(a.event_date) >= new Date());
+  const upcoming = [
+    ...announcements
+      .filter((a) => a.event_date && new Date(a.event_date) >= new Date())
+      .map((a) => ({ date: a.event_date as string, title: a.title, location: a.location ?? "Botswana" })),
+    ...FAMILY_EVENTS.filter((e) => new Date(e.date) >= new Date()),
+  ].sort((a, b) => a.date.localeCompare(b.date));
   const nextEvent = upcoming[0];
+
 
   if (loading) {
     return (
@@ -205,12 +245,12 @@ const Dashboard = () => {
         <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
           <CrestWatermark className="pointer-events-none absolute -right-10 -top-6 h-56 w-56 text-gold opacity-[0.08]" />
           <div className="relative flex flex-col items-center text-center">
-            <FamilyCrest size={76} />
+            <MagdaleneCrest size={84} />
             <p className="mt-3 font-display text-2xl font-semibold tracking-wide text-ivory">
               Poane Family Circle
             </p>
             <span className="mt-2 h-px w-16 bg-gold/60" aria-hidden="true" />
-            <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory/80">
+            <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory">
               {greeting}, {firstName}.
             </h1>
             <p className="mt-1 font-display text-xs italic text-gold-soft">
@@ -252,7 +292,7 @@ const Dashboard = () => {
                   <span className="absolute left-[3px] top-4 h-full w-px bg-gold/25" aria-hidden="true" />
                   <p className="font-display text-sm font-semibold text-foreground">{m.year}</p>
                   <p className="text-sm text-muted-foreground">{m.label}</p>
-                  <p className="text-xs text-muted-foreground/80">{m.place}</p>
+                  <p className="text-xs text-muted-foreground">{m.place}</p>
                 </li>
               ))}
             </ol>
@@ -270,11 +310,12 @@ const Dashboard = () => {
                 </p>
                 <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   <CalendarDays className="h-3.5 w-3.5 text-gold" aria-hidden="true" />
-                  {nextEvent?.event_date
-                    ? new Date(nextEvent.event_date).toLocaleDateString(undefined, {
+                  {nextEvent?.date
+                    ? new Date(nextEvent.date).toLocaleDateString(undefined, {
                         weekday: "short",
                         month: "long",
                         day: "numeric",
+                        year: "numeric",
                       })
                     : "Date to be announced"}
                 </p>
@@ -292,8 +333,32 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
+
+            {upcoming.length > 1 && (
+              <ul className="mt-3 space-y-2">
+                {upcoming.slice(1, 5).map((e) => (
+                  <li
+                    key={`${e.date}-${e.title}`}
+                    className="flex items-start justify-between gap-3 rounded-xl border border-border/60 bg-muted/40 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{e.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{e.location}</p>
+                    </div>
+                    <span className="shrink-0 text-xs font-medium text-gold">
+                      {new Date(e.date).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        year: "2-digit",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
+
 
         {/* Announcements */}
         <Card className="mt-4" delay={0.18}>
@@ -332,7 +397,7 @@ const Dashboard = () => {
             <Sparkles className="h-[18px] w-[18px] text-gold" aria-hidden="true" />
             Ask MAGGIE
           </h2>
-          <p className="mt-1 text-sm text-ivory/75">
+          <p className="mt-1 text-sm text-ivory/90">
             Your matriarch's memory — lineage, clan history and kinship.
           </p>
           <form
@@ -350,7 +415,7 @@ const Dashboard = () => {
               value={maggieQuery}
               onChange={(e) => setMaggieQuery(e.target.value)}
               placeholder="Ask about your family…"
-              className="h-11 rounded-full border-gold/30 bg-ivory/10 text-ivory placeholder:text-ivory/50 focus-visible:ring-gold"
+              className="h-11 rounded-full border-gold/30 bg-ivory/10 text-ivory placeholder:text-ivory/70 focus-visible:ring-gold"
             />
             <Button
               type="submit"
@@ -366,7 +431,7 @@ const Dashboard = () => {
               <li key={p}>
                 <Link
                   to={`/maggie?q=${encodeURIComponent(p)}`}
-                  className="inline-flex rounded-full border border-gold/40 px-3 py-1.5 text-xs text-ivory/90 transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                  className="inline-flex rounded-full border border-gold/40 px-3 py-1.5 text-xs text-ivory transition-colors hover:bg-gold/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                 >
                   {p}
                 </Link>
@@ -398,11 +463,11 @@ const Dashboard = () => {
             <SectionTitle icon={Activity} to="/library">
               Recent Family Activity
             </SectionTitle>
-            {activity.length === 0 ? (
+            {activity.length === 0 && HERITAGE_ACTIVITY.length === 0 ? (
               <p className="text-sm text-muted-foreground">No recent contributions.</p>
             ) : (
               <ul className="space-y-3">
-                {activity.map((a) => (
+                {[...activity, ...HERITAGE_ACTIVITY].map((a) => (
                   <li key={a.id} className="flex items-center justify-between gap-3">
                     <span className="truncate text-sm text-foreground">{a.label}</span>
                     <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
@@ -433,7 +498,7 @@ const Dashboard = () => {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-ivory">
                 <MapPin className="h-6 w-6 text-gold" aria-hidden="true" />
                 <p className="font-display text-sm">Serowe · Gaborone · Palapye · Francistown</p>
-                <p className="text-xs text-ivory/70">Tap to explore where the family lives</p>
+                <p className="text-xs text-ivory/85">Tap to explore where the family lives</p>
               </div>
             </div>
           </Link>
