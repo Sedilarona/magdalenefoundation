@@ -39,12 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
-      .single();
-    
-    if (!error && data) {
-      setProfile(data);
-    }
+      .maybeSingle();
+
+    // Always replace — never leave a previous user's profile in state.
+    setProfile(!error && data ? (data as Profile) : null);
   };
+
 
   useEffect(() => {
     // Set up auth state listener FIRST
