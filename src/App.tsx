@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -51,31 +52,31 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/family-tree" element={<FamilyTree />} />
-            <Route path="/tales" element={<Tales />} />
-            <Route path="/games" element={<Games />} />
-            <Route path="/games/leaderboard" element={<Leaderboard />} />
-            <Route path="/games/crossword" element={<Crossword />} />
-            <Route path="/games/bible-trivia" element={<BibleTrivia />} />
-            <Route path="/games/family-trivia" element={<FamilyTrivia />} />
-            <Route path="/games/ludo" element={<Ludo />} />
-            <Route path="/games/snakes-ladders" element={<SnakesLadders />} />
-            <Route path="/games/chess" element={<Chess />} />
-            <Route path="/games/crazy-8" element={<Crazy8 />} />
-            <Route path="/games/rummy" element={<Rummy />} />
-            <Route path="/games/family-puzzle" element={<FamilyPuzzle />} />
-            <Route path="/games/word-search" element={<WordSearch />} />
-            <Route path="/games/memory-match" element={<MemoryMatch />} />
-            <Route path="/games/tic-tac-toe" element={<TicTacToe />} />
-            <Route path="/resources" element={<Resources />} />
-            <Route path="/library" element={<Library />} />
-            <Route path="/maggie" element={<Maggie />} />
-            <Route path="/locate-family" element={<LocateFamily />} />
-            <Route path="/family-services" element={<FamilyServices />} />
-            <Route path="/family-art" element={<FamilyArt />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/family-tree" element={<ProtectedRoute><FamilyTree /></ProtectedRoute>} />
+            <Route path="/tales" element={<ProtectedRoute><Tales /></ProtectedRoute>} />
+            <Route path="/games" element={<ProtectedRoute><Games /></ProtectedRoute>} />
+            <Route path="/games/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+            <Route path="/games/crossword" element={<ProtectedRoute><Crossword /></ProtectedRoute>} />
+            <Route path="/games/bible-trivia" element={<ProtectedRoute><BibleTrivia /></ProtectedRoute>} />
+            <Route path="/games/family-trivia" element={<ProtectedRoute><FamilyTrivia /></ProtectedRoute>} />
+            <Route path="/games/ludo" element={<ProtectedRoute><Ludo /></ProtectedRoute>} />
+            <Route path="/games/snakes-ladders" element={<ProtectedRoute><SnakesLadders /></ProtectedRoute>} />
+            <Route path="/games/chess" element={<ProtectedRoute><Chess /></ProtectedRoute>} />
+            <Route path="/games/crazy-8" element={<ProtectedRoute><Crazy8 /></ProtectedRoute>} />
+            <Route path="/games/rummy" element={<ProtectedRoute><Rummy /></ProtectedRoute>} />
+            <Route path="/games/family-puzzle" element={<ProtectedRoute><FamilyPuzzle /></ProtectedRoute>} />
+            <Route path="/games/word-search" element={<ProtectedRoute><WordSearch /></ProtectedRoute>} />
+            <Route path="/games/memory-match" element={<ProtectedRoute><MemoryMatch /></ProtectedRoute>} />
+            <Route path="/games/tic-tac-toe" element={<ProtectedRoute><TicTacToe /></ProtectedRoute>} />
+            <Route path="/resources" element={<ProtectedRoute><Resources /></ProtectedRoute>} />
+            <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+            <Route path="/maggie" element={<ProtectedRoute><Maggie /></ProtectedRoute>} />
+            <Route path="/locate-family" element={<ProtectedRoute><LocateFamily /></ProtectedRoute>} />
+            <Route path="/family-services" element={<ProtectedRoute><FamilyServices /></ProtectedRoute>} />
+            <Route path="/family-art" element={<ProtectedRoute><FamilyArt /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
