@@ -183,10 +183,31 @@ const Dashboard = () => {
     };
 
     load().catch(() => undefined);
+
+    // Keep the dashboard numbers in sync with the rest of the app.
+    const refresh = () => load().catch(() => undefined);
+    const channel = supabase
+      .channel("dashboard-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "family_members" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tales" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "media_uploads" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "announcements" }, refresh)
+      .subscribe();
+
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", refresh);
+
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", refresh);
     };
   }, []);
+
 
   const now = new Date();
   const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
