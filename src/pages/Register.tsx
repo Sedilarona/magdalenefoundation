@@ -24,6 +24,12 @@ const FAMILY_BRANCHES = [
   "Other / Extended family",
 ];
 
+interface FamilyName {
+  full_name: string;
+  gender: string | null;
+  birth_year: string | null;
+}
+
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,10 +40,31 @@ const Register = () => {
     familyBranch: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [names, setNames] = useState<FamilyName[]>([]);
+  const [namesLoading, setNamesLoading] = useState(true);
+
   const { signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Only people already recorded in the family tree may open an account.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.rpc("list_family_names");
+      if (cancelled) return;
+      const rows = ((data ?? []) as unknown as FamilyName[])
+        .filter((r) => r.full_name)
+        .sort((a, b) => a.full_name.localeCompare(b.full_name));
+      setNames(rows);
+      setNamesLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedMember = names.find((n) => n.full_name === formData.fullName);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -45,6 +72,7 @@ const Register = () => {
       [e.target.id]: e.target.value,
     }));
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
