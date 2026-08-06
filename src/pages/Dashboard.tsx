@@ -59,7 +59,23 @@ const FAMILY_EVENTS = [
   { date: "2026-11-29", title: "Wedding Celebration", location: "Mathubudukwane" },
 ];
 
+const KOPONG_REUNION = {
+  id: "reunion-kopong",
+  label: "Family reunion in Kopong",
+  when: "Upcoming",
+  detail: {
+    title: "Family Reunion — Kopong",
+    body: [
+      "Kopong is a small village in the Kweneng District of Botswana. It lies about 25 km north of Gaborone, and exactly 29 km from the Gaborone bus rank (bus fare BWP 9.00).",
+      "The population was 5,571 at the 2001 census and 9,520 at the 2011 census, making it the sixth largest settlement in Kweneng.",
+      "It is the capital of Basikwa, whose totem is a snake.",
+      "The reunion will be hosted at the Tshepho Poane primary residence in Kopong West, Pitseng Ward (behind the new Kopong community hall).",
+    ],
+  },
+};
+
 const HERITAGE_ACTIVITY = [
+  KOPONG_REUNION,
   { id: "reunion-2024", label: "Family reunion in Mmathudukwane, hosted by the Kgafela family", when: "2024" },
 ];
 
