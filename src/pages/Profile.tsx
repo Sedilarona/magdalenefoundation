@@ -177,6 +177,9 @@ const Profile = () => {
           
           phone_number: phoneNumber,
           services,
+          birth_year: birthYear ? Number(birthYear) : null,
+          birth_month: birthMonth ? Number(birthMonth) : null,
+          birth_day: birthDay ? Number(birthDay) : null,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
