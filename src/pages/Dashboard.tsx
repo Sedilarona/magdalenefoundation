@@ -24,8 +24,16 @@ import { BottomNav } from "@/components/BottomNav";
 import { CrestWatermark } from "@/components/FamilyCrest";
 import { MagdaleneCrest } from "@/components/MagdaleneCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
+import { ProfileButton } from "@/components/ProfileButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Announcement {
   id: string;
@@ -51,7 +59,23 @@ const FAMILY_EVENTS = [
   { date: "2026-11-29", title: "Wedding Celebration", location: "Mathubudukwane" },
 ];
 
+const KOPONG_REUNION = {
+  id: "reunion-kopong",
+  label: "Family reunion in Kopong",
+  when: "Upcoming",
+  detail: {
+    title: "Family Reunion — Kopong",
+    body: [
+      "Kopong is a small village in the Kweneng District of Botswana. It lies about 25 km north of Gaborone, and exactly 29 km from the Gaborone bus rank (bus fare BWP 9.00).",
+      "The population was 5,571 at the 2001 census and 9,520 at the 2011 census, making it the sixth largest settlement in Kweneng.",
+      "It is the capital of Basikwa, whose totem is a snake.",
+      "The reunion will be hosted at the Tshepho Poane primary residence in Kopong West, Pitseng Ward (behind the new Kopong community hall).",
+    ],
+  },
+};
+
 const HERITAGE_ACTIVITY = [
+  KOPONG_REUNION,
   { id: "reunion-2024", label: "Family reunion in Mmathudukwane, hosted by the Kgafela family", when: "2024" },
 ];
 
@@ -120,6 +144,11 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ members: 0, generations: 0, stories: 0, completion: 0 });
   const [activity, setActivity] = useState<{ id: string; label: string; when: string }[]>([]);
   const [maggieQuery, setMaggieQuery] = useState("");
+  const [memberList, setMemberList] = useState<
+    { id: string; full_name: string; generation_level: number | null; location: string | null }[]
+  >([]);
+  const [showMembers, setShowMembers] = useState(false);
+  const [showKopong, setShowKopong] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -131,7 +160,11 @@ const Dashboard = () => {
     const load = async () => {
       const [{ data: members }, { count: storyCount }, { data: anns }, { data: media }] =
         await Promise.all([
-          supabase.from("family_members").select("id, generation_level, birth_month, photo_url"),
+          supabase
+            .from("family_members")
+            .select("id, full_name, generation_level, birth_month, birth_year, location, occupation, bio")
+            .order("generation_level", { ascending: true })
+            .order("sibling_order", { ascending: true, nullsFirst: false }),
           supabase.from("tales").select("id", { count: "exact", head: true }),
           supabase
             .from("announcements")
@@ -149,21 +182,39 @@ const Dashboard = () => {
 
       const rows = (members ?? []) as unknown as {
         id: string;
+        full_name: string;
         generation_level: number | null;
         birth_month: number | null;
-        photo_url: string | null;
+        birth_year: string | null;
+        location: string | null;
+        occupation: string | null;
+        bio: string | null;
       }[];
       const generations = new Set(
         rows.map((r) => r.generation_level).filter((g) => g != null),
       ).size;
-      const withDetail = rows.filter((r) => r.birth_month || r.photo_url).length;
+
+      // A record counts as "complete" when it carries a birthday, a birth year
+      // and a place — the three details the archive needs from every member.
+      const filled = rows.reduce((acc, r) => {
+        const parts = [r.birth_month, r.birth_year, r.location].filter(Boolean).length;
+        return acc + parts / 3;
+      }, 0);
 
       setStats({
         members: rows.length,
         generations,
         stories: storyCount ?? 0,
-        completion: rows.length ? Math.round((withDetail / rows.length) * 100) : 0,
+        completion: rows.length ? Math.round((filled / rows.length) * 100) : 0,
       });
+      setMemberList(
+        rows.map((r) => ({
+          id: r.id,
+          full_name: r.full_name,
+          generation_level: r.generation_level,
+          location: r.location,
+        })),
+      );
       setAnnouncements(anns ?? []);
       setActivity(
         ((media ?? []) as unknown as {
@@ -211,7 +262,8 @@ const Dashboard = () => {
 
   const now = new Date();
   const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
-  const firstName = (profile?.full_name || user?.email?.split("@")[0] || "Friend").split(" ")[0];
+  const fullName = profile?.full_name || user?.email?.split("@")[0] || "Friend";
+  const firstName = fullName.split(" ")[0];
 
   const upcoming = [
     ...announcements
@@ -221,6 +273,21 @@ const Dashboard = () => {
   ].sort((a, b) => a.date.localeCompare(b.date));
   const nextEvent = upcoming[0];
 
+  // The timeline is personal: each member sees their own birth woven into it.
+  const myBirthYear = (profile as { birth_year?: number | null } | null)?.birth_year;
+  const timeline = [
+    ...MILESTONES,
+    ...(myBirthYear
+      ? [
+          {
+            year: String(myBirthYear),
+            label: `You were born — ${fullName} joins the family story`,
+            place: profile?.location || "Botswana",
+            icon: Sparkles,
+          },
+        ]
+      : []),
+  ].sort((a, b) => a.year.localeCompare(b.year));
 
   if (loading) {
     return (
@@ -232,10 +299,10 @@ const Dashboard = () => {
   if (!user) return null;
 
   const statCards = [
-    { icon: Users, label: "Family Members", value: stats.members || "—" },
-    { icon: Layers, label: "Generations", value: stats.generations || "—" },
-    { icon: BookHeart, label: "Stories Preserved", value: stats.stories || "—" },
-    { icon: GitBranch, label: "Tree Complete", value: `${stats.completion}%` },
+    { icon: Users, label: "Family Members", value: stats.members || "—", onClick: () => setShowMembers(true) },
+    { icon: Layers, label: "Generations", value: stats.generations || "—", to: "/family-tree" },
+    { icon: BookHeart, label: "Stories Preserved", value: stats.stories || "—", to: "/tales" },
+    { icon: GitBranch, label: "Tree Complete", value: `${stats.completion}%`, to: "/family-tree" },
   ];
 
   return (
@@ -244,14 +311,24 @@ const Dashboard = () => {
         {/* Header */}
         <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
           <CrestWatermark className="pointer-events-none absolute -right-10 -top-6 h-56 w-56 text-gold opacity-[0.08]" />
+          <div className="absolute right-4 top-4 z-10">
+            <ProfileButton />
+          </div>
           <div className="relative flex flex-col items-center text-center">
             <MagdaleneCrest size={84} />
-            <p className="mt-3 font-display text-2xl font-semibold tracking-wide text-ivory">
+            <p className="mt-3 font-display text-xl font-semibold tracking-wide text-ivory sm:text-2xl">
               Poane Family Circle
             </p>
             <span className="mt-2 h-px w-16 bg-gold/60" aria-hidden="true" />
             <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory">
-              {greeting}, {firstName}.
+              {greeting},{" "}
+              <Link
+                to="/profile"
+                className="rounded-md font-semibold text-gold-soft underline decoration-gold/50 underline-offset-4 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              >
+                {firstName}
+              </Link>
+              .
             </h1>
             <p className="mt-1 font-display text-xs italic text-gold-soft">
               Sethare se segologolo, sethare se setona.
@@ -261,19 +338,35 @@ const Dashboard = () => {
 
         {/* Stats */}
         <div className="mt-5 grid grid-cols-2 gap-3">
-          {statCards.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="rounded-[18px] border border-gold/20 bg-card p-4 shadow-[var(--shadow-archive)]"
-            >
-              <s.icon className="h-5 w-5 text-gold" aria-hidden="true" />
-              <p className="mt-3 font-display text-2xl font-semibold text-foreground">{s.value}</p>
-              <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
-            </motion.div>
-          ))}
+          {statCards.map((s, i) => {
+            const body = (
+              <>
+                <s.icon className="h-5 w-5 text-gold" aria-hidden="true" />
+                <p className="mt-3 font-display text-2xl font-semibold text-foreground">{s.value}</p>
+                <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
+              </>
+            );
+            const cls =
+              "block w-full rounded-[18px] border border-gold/20 bg-card p-4 text-left shadow-[var(--shadow-archive)] transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold";
+            return (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+              >
+                {s.to ? (
+                  <Link to={s.to} className={cls}>
+                    {body}
+                  </Link>
+                ) : (
+                  <button type="button" onClick={s.onClick} className={cls}>
+                    {body}
+                  </button>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Timeline + Events */}
@@ -283,8 +376,8 @@ const Dashboard = () => {
               Family Timeline
             </SectionTitle>
             <ol className="space-y-4">
-              {MILESTONES.map((m) => (
-                <li key={m.year} className="relative pl-5">
+              {timeline.map((m) => (
+                <li key={`${m.year}-${m.label}`} className="relative pl-5">
                   <span
                     className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gold"
                     aria-hidden="true"
@@ -295,8 +388,18 @@ const Dashboard = () => {
                   <p className="text-xs text-muted-foreground">{m.place}</p>
                 </li>
               ))}
+              {!myBirthYear && (
+                <li className="rounded-xl border border-dashed border-gold/40 p-3 text-xs text-muted-foreground">
+                  Add your birth year in{" "}
+                  <Link to="/profile" className="font-medium text-gold underline">
+                    your profile
+                  </Link>{" "}
+                  and your own birth will appear here.
+                </li>
+              )}
             </ol>
           </Card>
+
 
           <Card delay={0.14} id="events">
             <SectionTitle icon={CalendarDays}>Upcoming Events</SectionTitle>
@@ -467,15 +570,29 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">No recent contributions.</p>
             ) : (
               <ul className="space-y-3">
-                {[...activity, ...HERITAGE_ACTIVITY].map((a) => (
-                  <li key={a.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate text-sm text-foreground">{a.label}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
-                  </li>
-                ))}
+                {[...activity, ...HERITAGE_ACTIVITY].map((a) => {
+                  const isKopong = a.id === KOPONG_REUNION.id;
+                  return (
+                    <li key={a.id} className="flex items-center justify-between gap-3">
+                      {isKopong ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowKopong(true)}
+                          className="truncate text-left text-sm font-medium text-gold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                        >
+                          {a.label}
+                        </button>
+                      ) : (
+                        <span className="truncate text-sm text-foreground">{a.label}</span>
+                      )}
+                      <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </Card>
+
         </div>
 
         {/* Birthdays */}
@@ -505,9 +622,50 @@ const Dashboard = () => {
         </Card>
       </main>
 
+      {/* Summative family member list */}
+      <Dialog open={showMembers} onOpenChange={setShowMembers}>
+        <DialogContent className="max-h-[80dvh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">Family Members ({memberList.length})</DialogTitle>
+            <DialogDescription>Everyone recorded in the family archive.</DialogDescription>
+          </DialogHeader>
+          <ul className="divide-y divide-border">
+            {memberList.map((m) => (
+              <li key={m.id} className="flex items-center justify-between gap-3 py-2">
+                <span className="truncate text-sm text-foreground">{m.full_name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {m.location || `Gen ${m.generation_level ?? "—"}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <Button asChild variant="outline" className="mt-2 w-full">
+            <Link to="/family-tree" onClick={() => setShowMembers(false)}>
+              Open the family tree
+            </Link>
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kopong reunion summary */}
+      <Dialog open={showKopong} onOpenChange={setShowKopong}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">{KOPONG_REUNION.detail.title}</DialogTitle>
+            <DialogDescription>Kweneng District, Botswana</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-foreground">
+            {KOPONG_REUNION.detail.body.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <BottomNav />
     </div>
   );
 };
+
 
 export default Dashboard;

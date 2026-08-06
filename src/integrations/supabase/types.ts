@@ -315,9 +315,13 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          birth_day: number | null
+          birth_month: number | null
+          birth_year: number | null
           contribution_points: number | null
           created_at: string
           family_branch: string | null
+          family_member_id: string | null
           full_name: string
           generation: string | null
           id: string
@@ -331,9 +335,13 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
           contribution_points?: number | null
           created_at?: string
           family_branch?: string | null
+          family_member_id?: string | null
           full_name: string
           generation?: string | null
           id?: string
@@ -347,9 +355,13 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
           contribution_points?: number | null
           created_at?: string
           family_branch?: string | null
+          family_member_id?: string | null
           full_name?: string
           generation?: string | null
           id?: string
@@ -360,7 +372,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_family_member_id_fkey"
+            columns: ["family_member_id"]
+            isOneToOne: false
+            referencedRelation: "family_members"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scripture_content: {
         Row: {
@@ -469,6 +489,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      list_family_names: {
+        Args: never
+        Returns: {
+          birth_year: string
+          full_name: string
+          gender: string
+          generation_level: number
+          id: string
+        }[]
       }
     }
     Enums: {

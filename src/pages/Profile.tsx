@@ -65,6 +65,9 @@ const Profile = () => {
   const [occupation, setOccupation] = useState("");
   
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -99,17 +102,26 @@ const Profile = () => {
     
     const { data, error } = await supabase
       .from("profiles")
-      .select("phone_number, services, avatar_url")
+      .select("phone_number, services, avatar_url, birth_year, birth_month, birth_day")
       .eq("user_id", user.id)
       .single();
 
     if (!error && data) {
-      setPhoneNumber(data.phone_number || "");
-      setServices(data.services || []);
-      setAvatarPath(data.avatar_url || null);
-      if (data.avatar_url) loadAvatar(data.avatar_url);
+      const row = data as typeof data & {
+        birth_year: number | null;
+        birth_month: number | null;
+        birth_day: number | null;
+      };
+      setPhoneNumber(row.phone_number || "");
+      setServices(row.services || []);
+      setAvatarPath(row.avatar_url || null);
+      setBirthYear(row.birth_year ? String(row.birth_year) : "");
+      setBirthMonth(row.birth_month ? String(row.birth_month) : "");
+      setBirthDay(row.birth_day ? String(row.birth_day) : "");
+      if (row.avatar_url) loadAvatar(row.avatar_url);
     }
   };
+
 
   const loadAvatar = async (path: string) => {
     const { data } = await supabase.storage.from("family-media").createSignedUrl(path, 3600);
@@ -165,6 +177,9 @@ const Profile = () => {
           
           phone_number: phoneNumber,
           services,
+          birth_year: birthYear ? Number(birthYear) : null,
+          birth_month: birthMonth ? Number(birthMonth) : null,
+          birth_day: birthDay ? Number(birthDay) : null,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id);
@@ -407,6 +422,44 @@ const Profile = () => {
                     />
                   </div>
                 </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthDay">Birthday</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      id="birthDay"
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={birthDay}
+                      onChange={(e) => setBirthDay(e.target.value)}
+                      placeholder="Day"
+                    />
+                    <Input
+                      id="birthMonth"
+                      type="number"
+                      min={1}
+                      max={12}
+                      value={birthMonth}
+                      onChange={(e) => setBirthMonth(e.target.value)}
+                      placeholder="Month"
+                    />
+                    <Input
+                      id="birthYear"
+                      type="number"
+                      min={1900}
+                      max={new Date().getFullYear()}
+                      value={birthYear}
+                      onChange={(e) => setBirthYear(e.target.value)}
+                      placeholder="Year"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your birthday powers the monthly family announcements and your place on the family
+                    timeline.
+                  </p>
+                </div>
+
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>

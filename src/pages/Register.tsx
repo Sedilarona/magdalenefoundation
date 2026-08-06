@@ -24,6 +24,12 @@ const FAMILY_BRANCHES = [
   "Other / Extended family",
 ];
 
+interface FamilyName {
+  full_name: string;
+  gender: string | null;
+  birth_year: string | null;
+}
+
 const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,10 +40,31 @@ const Register = () => {
     familyBranch: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  
+  const [names, setNames] = useState<FamilyName[]>([]);
+  const [namesLoading, setNamesLoading] = useState(true);
+
   const { signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Only people already recorded in the family tree may open an account.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.rpc("list_family_names");
+      if (cancelled) return;
+      const rows = ((data ?? []) as unknown as FamilyName[])
+        .filter((r) => r.full_name)
+        .sort((a, b) => a.full_name.localeCompare(b.full_name));
+      setNames(rows);
+      setNamesLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const selectedMember = names.find((n) => n.full_name === formData.fullName);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({
@@ -45,6 +72,7 @@ const Register = () => {
       [e.target.id]: e.target.value,
     }));
   };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +85,16 @@ const Register = () => {
       });
       return;
     }
+
+    if (!selectedMember) {
+      toast({
+        title: "Name not in the family tree",
+        description: "Please pick your name from the list. Only recorded family members can join.",
+        variant: "destructive",
+      });
+      return;
+    }
+
 
     if (formData.password !== formData.confirmPassword) {
       toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" });
@@ -122,22 +160,44 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-foreground">
-                Full Name
+                Your Name (as recorded in the family tree)
               </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+              <Select
+                value={formData.fullName}
+                onValueChange={(v) => setFormData((p) => ({ ...p, fullName: v }))}
+                disabled={isLoading || namesLoading}
+              >
+                <SelectTrigger id="fullName" className="h-12 bg-card border-sage-200">
+                  <div className="flex items-center gap-2 truncate">
+                    <User className="w-4 h-4 shrink-0 text-muted-foreground" />
+                    <SelectValue
+                      placeholder={namesLoading ? "Loading family names..." : "Select your name"}
+                    />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {names.map((n) => (
+                    <SelectItem key={n.full_name} value={n.full_name}>
+                      {n.full_name}
+                      {n.birth_year ? ` · ${n.birth_year}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedMember ? (
+                <p className="text-xs text-muted-foreground">
+                  On record: {selectedMember.gender ?? "gender not recorded"}
+                  {selectedMember.birth_year ? `, born ${selectedMember.birth_year}` : ""}. You can add
+                  your phone, birthday, occupation and services after signing up.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Your name must already exist in the family tree. Ask an elder to add you if it is
+                  missing.
+                </p>
+              )}
             </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="familyBranch" className="text-foreground">Family Branch</Label>
