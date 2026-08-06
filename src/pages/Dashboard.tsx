@@ -570,15 +570,29 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground">No recent contributions.</p>
             ) : (
               <ul className="space-y-3">
-                {[...activity, ...HERITAGE_ACTIVITY].map((a) => (
-                  <li key={a.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate text-sm text-foreground">{a.label}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
-                  </li>
-                ))}
+                {[...activity, ...HERITAGE_ACTIVITY].map((a) => {
+                  const isKopong = a.id === KOPONG_REUNION.id;
+                  return (
+                    <li key={a.id} className="flex items-center justify-between gap-3">
+                      {isKopong ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowKopong(true)}
+                          className="truncate text-left text-sm font-medium text-gold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                        >
+                          {a.label}
+                        </button>
+                      ) : (
+                        <span className="truncate text-sm text-foreground">{a.label}</span>
+                      )}
+                      <span className="shrink-0 text-xs text-muted-foreground">{a.when}</span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </Card>
+
         </div>
 
         {/* Birthdays */}
