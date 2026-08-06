@@ -105,6 +105,20 @@
     --background: 155 25% 8%;
     --foreground: 60 20% 95%;
 
+    /* Sage ramp inverts in dark mode so text-sage-* utilities stay legible
+       against dark surfaces instead of sinking into them. */
+    --sage-50: 155 20% 14%;
+    --sage-100: 155 18% 18%;
+    --sage-200: 155 16% 26%;
+    --sage-300: 148 20% 38%;
+    --sage-400: 145 26% 52%;
+    --sage-500: 145 36% 66%;
+    --sage-600: 145 40% 74%;
+    --sage-700: 145 44% 82%;
+    --sage-800: 145 46% 89%;
+    --sage-900: 145 40% 95%;
+
+
     --card: 155 22% 11%;
     --card-foreground: 60 20% 95%;
 
