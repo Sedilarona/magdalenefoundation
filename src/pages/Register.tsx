@@ -150,22 +150,44 @@ const Register = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-foreground">
-                Full Name
+                Your Name (as recorded in the family tree)
               </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder="Your full name"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+              <Select
+                value={formData.fullName}
+                onValueChange={(v) => setFormData((p) => ({ ...p, fullName: v }))}
+                disabled={isLoading || namesLoading}
+              >
+                <SelectTrigger id="fullName" className="h-12 bg-card border-sage-200">
+                  <div className="flex items-center gap-2 truncate">
+                    <User className="w-4 h-4 shrink-0 text-muted-foreground" />
+                    <SelectValue
+                      placeholder={namesLoading ? "Loading family names..." : "Select your name"}
+                    />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="max-h-72">
+                  {names.map((n) => (
+                    <SelectItem key={n.full_name} value={n.full_name}>
+                      {n.full_name}
+                      {n.birth_year ? ` · ${n.birth_year}` : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedMember ? (
+                <p className="text-xs text-muted-foreground">
+                  On record: {selectedMember.gender ?? "gender not recorded"}
+                  {selectedMember.birth_year ? `, born ${selectedMember.birth_year}` : ""}. You can add
+                  your phone, birthday, occupation and services after signing up.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Your name must already exist in the family tree. Ask an elder to add you if it is
+                  missing.
+                </p>
+              )}
             </div>
+
 
             <div className="space-y-2">
               <Label htmlFor="familyBranch" className="text-foreground">Family Branch</Label>
