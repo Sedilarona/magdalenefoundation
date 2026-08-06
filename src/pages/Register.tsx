@@ -86,6 +86,16 @@ const Register = () => {
       return;
     }
 
+    if (!selectedMember) {
+      toast({
+        title: "Name not in the family tree",
+        description: "Please pick your name from the list. Only recorded family members can join.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+
     if (formData.password !== formData.confirmPassword) {
       toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" });
       return;
