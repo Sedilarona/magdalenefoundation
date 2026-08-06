@@ -65,6 +65,9 @@ const Profile = () => {
   const [occupation, setOccupation] = useState("");
   
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [birthMonth, setBirthMonth] = useState("");
+  const [birthDay, setBirthDay] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
