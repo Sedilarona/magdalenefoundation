@@ -622,9 +622,50 @@ const Dashboard = () => {
         </Card>
       </main>
 
+      {/* Summative family member list */}
+      <Dialog open={showMembers} onOpenChange={setShowMembers}>
+        <DialogContent className="max-h-[80dvh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">Family Members ({memberList.length})</DialogTitle>
+            <DialogDescription>Everyone recorded in the family archive.</DialogDescription>
+          </DialogHeader>
+          <ul className="divide-y divide-border">
+            {memberList.map((m) => (
+              <li key={m.id} className="flex items-center justify-between gap-3 py-2">
+                <span className="truncate text-sm text-foreground">{m.full_name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {m.location || `Gen ${m.generation_level ?? "—"}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <Button asChild variant="outline" className="mt-2 w-full">
+            <Link to="/family-tree" onClick={() => setShowMembers(false)}>
+              Open the family tree
+            </Link>
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Kopong reunion summary */}
+      <Dialog open={showKopong} onOpenChange={setShowKopong}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-display">{KOPONG_REUNION.detail.title}</DialogTitle>
+            <DialogDescription>Kweneng District, Botswana</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 text-sm text-foreground">
+            {KOPONG_REUNION.detail.body.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <BottomNav />
     </div>
   );
 };
+
 
 export default Dashboard;
