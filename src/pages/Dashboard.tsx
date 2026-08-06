@@ -262,7 +262,8 @@ const Dashboard = () => {
 
   const now = new Date();
   const greeting = useMemo(() => greetingFor(now.getHours()), [now]);
-  const firstName = (profile?.full_name || user?.email?.split("@")[0] || "Friend").split(" ")[0];
+  const fullName = profile?.full_name || user?.email?.split("@")[0] || "Friend";
+  const firstName = fullName.split(" ")[0];
 
   const upcoming = [
     ...announcements
@@ -272,6 +273,21 @@ const Dashboard = () => {
   ].sort((a, b) => a.date.localeCompare(b.date));
   const nextEvent = upcoming[0];
 
+  // The timeline is personal: each member sees their own birth woven into it.
+  const myBirthYear = (profile as { birth_year?: number | null } | null)?.birth_year;
+  const timeline = [
+    ...MILESTONES,
+    ...(myBirthYear
+      ? [
+          {
+            year: String(myBirthYear),
+            label: `You were born — ${fullName} joins the family story`,
+            place: profile?.location || "Botswana",
+            icon: Sparkles,
+          },
+        ]
+      : []),
+  ].sort((a, b) => a.year.localeCompare(b.year));
 
   if (loading) {
     return (
@@ -283,10 +299,10 @@ const Dashboard = () => {
   if (!user) return null;
 
   const statCards = [
-    { icon: Users, label: "Family Members", value: stats.members || "—" },
-    { icon: Layers, label: "Generations", value: stats.generations || "—" },
-    { icon: BookHeart, label: "Stories Preserved", value: stats.stories || "—" },
-    { icon: GitBranch, label: "Tree Complete", value: `${stats.completion}%` },
+    { icon: Users, label: "Family Members", value: stats.members || "—", onClick: () => setShowMembers(true) },
+    { icon: Layers, label: "Generations", value: stats.generations || "—", to: "/family-tree" },
+    { icon: BookHeart, label: "Stories Preserved", value: stats.stories || "—", to: "/tales" },
+    { icon: GitBranch, label: "Tree Complete", value: `${stats.completion}%`, to: "/family-tree" },
   ];
 
   return (
