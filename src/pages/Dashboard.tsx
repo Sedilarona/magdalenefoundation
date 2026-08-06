@@ -160,7 +160,11 @@ const Dashboard = () => {
     const load = async () => {
       const [{ data: members }, { count: storyCount }, { data: anns }, { data: media }] =
         await Promise.all([
-          supabase.from("family_members").select("id, generation_level, birth_month, photo_url"),
+          supabase
+            .from("family_members")
+            .select("id, full_name, generation_level, birth_month, birth_year, location, occupation, bio")
+            .order("generation_level", { ascending: true })
+            .order("sibling_order", { ascending: true, nullsFirst: false }),
           supabase.from("tales").select("id", { count: "exact", head: true }),
           supabase
             .from("announcements")
@@ -178,21 +182,39 @@ const Dashboard = () => {
 
       const rows = (members ?? []) as unknown as {
         id: string;
+        full_name: string;
         generation_level: number | null;
         birth_month: number | null;
-        photo_url: string | null;
+        birth_year: string | null;
+        location: string | null;
+        occupation: string | null;
+        bio: string | null;
       }[];
       const generations = new Set(
         rows.map((r) => r.generation_level).filter((g) => g != null),
       ).size;
-      const withDetail = rows.filter((r) => r.birth_month || r.photo_url).length;
+
+      // A record counts as "complete" when it carries a birthday, a birth year
+      // and a place — the three details the archive needs from every member.
+      const filled = rows.reduce((acc, r) => {
+        const parts = [r.birth_month, r.birth_year, r.location].filter(Boolean).length;
+        return acc + parts / 3;
+      }, 0);
 
       setStats({
         members: rows.length,
         generations,
         stories: storyCount ?? 0,
-        completion: rows.length ? Math.round((withDetail / rows.length) * 100) : 0,
+        completion: rows.length ? Math.round((filled / rows.length) * 100) : 0,
       });
+      setMemberList(
+        rows.map((r) => ({
+          id: r.id,
+          full_name: r.full_name,
+          generation_level: r.generation_level,
+          location: r.location,
+        })),
+      );
       setAnnouncements(anns ?? []);
       setActivity(
         ((media ?? []) as unknown as {
