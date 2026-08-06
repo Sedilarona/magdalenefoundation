@@ -24,8 +24,16 @@ import { BottomNav } from "@/components/BottomNav";
 import { CrestWatermark } from "@/components/FamilyCrest";
 import { MagdaleneCrest } from "@/components/MagdaleneCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
+import { ProfileButton } from "@/components/ProfileButton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Announcement {
   id: string;
