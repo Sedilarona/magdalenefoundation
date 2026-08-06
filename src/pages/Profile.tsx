@@ -424,6 +424,44 @@ const Profile = () => {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="birthDay">Birthday</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Input
+                      id="birthDay"
+                      type="number"
+                      min={1}
+                      max={31}
+                      value={birthDay}
+                      onChange={(e) => setBirthDay(e.target.value)}
+                      placeholder="Day"
+                    />
+                    <Input
+                      id="birthMonth"
+                      type="number"
+                      min={1}
+                      max={12}
+                      value={birthMonth}
+                      onChange={(e) => setBirthMonth(e.target.value)}
+                      placeholder="Month"
+                    />
+                    <Input
+                      id="birthYear"
+                      type="number"
+                      min={1900}
+                      max={new Date().getFullYear()}
+                      value={birthYear}
+                      onChange={(e) => setBirthYear(e.target.value)}
+                      placeholder="Year"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Your birthday powers the monthly family announcements and your place on the family
+                    timeline.
+                  </p>
+                </div>
+
+
+                <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
