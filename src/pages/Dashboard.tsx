@@ -311,14 +311,24 @@ const Dashboard = () => {
         {/* Header */}
         <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
           <CrestWatermark className="pointer-events-none absolute -right-10 -top-6 h-56 w-56 text-gold opacity-[0.08]" />
+          <div className="absolute right-4 top-4 z-10">
+            <ProfileButton />
+          </div>
           <div className="relative flex flex-col items-center text-center">
             <MagdaleneCrest size={84} />
-            <p className="mt-3 font-display text-2xl font-semibold tracking-wide text-ivory">
+            <p className="mt-3 font-display text-xl font-semibold tracking-wide text-ivory sm:text-2xl">
               Poane Family Circle
             </p>
             <span className="mt-2 h-px w-16 bg-gold/60" aria-hidden="true" />
             <h1 className="mt-3 text-sm font-medium tracking-wide text-ivory">
-              {greeting}, {firstName}.
+              {greeting},{" "}
+              <Link
+                to="/profile"
+                className="rounded-md font-semibold text-gold-soft underline decoration-gold/50 underline-offset-4 transition-colors hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              >
+                {firstName}
+              </Link>
+              .
             </h1>
             <p className="mt-1 font-display text-xs italic text-gold-soft">
               Sethare se segologolo, sethare se setona.
@@ -328,19 +338,35 @@ const Dashboard = () => {
 
         {/* Stats */}
         <div className="mt-5 grid grid-cols-2 gap-3">
-          {statCards.map((s, i) => (
-            <motion.div
-              key={s.label}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: i * 0.06 }}
-              className="rounded-[18px] border border-gold/20 bg-card p-4 shadow-[var(--shadow-archive)]"
-            >
-              <s.icon className="h-5 w-5 text-gold" aria-hidden="true" />
-              <p className="mt-3 font-display text-2xl font-semibold text-foreground">{s.value}</p>
-              <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
-            </motion.div>
-          ))}
+          {statCards.map((s, i) => {
+            const body = (
+              <>
+                <s.icon className="h-5 w-5 text-gold" aria-hidden="true" />
+                <p className="mt-3 font-display text-2xl font-semibold text-foreground">{s.value}</p>
+                <p className="text-xs tracking-wide text-muted-foreground">{s.label}</p>
+              </>
+            );
+            const cls =
+              "block w-full rounded-[18px] border border-gold/20 bg-card p-4 text-left shadow-[var(--shadow-archive)] transition-colors hover:border-gold/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold";
+            return (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+              >
+                {s.to ? (
+                  <Link to={s.to} className={cls}>
+                    {body}
+                  </Link>
+                ) : (
+                  <button type="button" onClick={s.onClick} className={cls}>
+                    {body}
+                  </button>
+                )}
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* Timeline + Events */}
@@ -350,8 +376,8 @@ const Dashboard = () => {
               Family Timeline
             </SectionTitle>
             <ol className="space-y-4">
-              {MILESTONES.map((m) => (
-                <li key={m.year} className="relative pl-5">
+              {timeline.map((m) => (
+                <li key={`${m.year}-${m.label}`} className="relative pl-5">
                   <span
                     className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-gold"
                     aria-hidden="true"
@@ -362,8 +388,18 @@ const Dashboard = () => {
                   <p className="text-xs text-muted-foreground">{m.place}</p>
                 </li>
               ))}
+              {!myBirthYear && (
+                <li className="rounded-xl border border-dashed border-gold/40 p-3 text-xs text-muted-foreground">
+                  Add your birth year in{" "}
+                  <Link to="/profile" className="font-medium text-gold underline">
+                    your profile
+                  </Link>{" "}
+                  and your own birth will appear here.
+                </li>
+              )}
             </ol>
           </Card>
+
 
           <Card delay={0.14} id="events">
             <SectionTitle icon={CalendarDays}>Upcoming Events</SectionTitle>
