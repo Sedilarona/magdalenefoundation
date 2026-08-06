@@ -144,6 +144,11 @@ const Dashboard = () => {
   const [stats, setStats] = useState({ members: 0, generations: 0, stories: 0, completion: 0 });
   const [activity, setActivity] = useState<{ id: string; label: string; when: string }[]>([]);
   const [maggieQuery, setMaggieQuery] = useState("");
+  const [memberList, setMemberList] = useState<
+    { id: string; full_name: string; generation_level: number | null; location: string | null }[]
+  >([]);
+  const [showMembers, setShowMembers] = useState(false);
+  const [showKopong, setShowKopong] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
