@@ -55,6 +55,10 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/request-family" element={<RequestFamily />} />
+            <Route path="/pending" element={<PendingAccess />} />
+            <Route path="/family-admin" element={<ProtectedRoute><FamilyAdmin /></ProtectedRoute>} />
+
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/family-tree" element={<ProtectedRoute><FamilyTree /></ProtectedRoute>} />
             <Route path="/tales" element={<ProtectedRoute><Tales /></ProtectedRoute>} />
