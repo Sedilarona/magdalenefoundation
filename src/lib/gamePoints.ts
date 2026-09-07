@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { getMyFamilyId } from "@/lib/family";
 
 export interface AwardArgs {
   gameKey: string;
@@ -27,6 +28,7 @@ export async function awardPoints({ gameKey, gameTitle, level = 1, points }: Awa
 
   await supabase.from("game_scores").insert({
     user_id: user.id,
+    family_id: await getMyFamilyId(),
     player_name: playerName,
     game_key: gameKey,
     game_title: gameTitle,

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Swords, Loader2, Users, Bot, Play, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyFamilyId } from "@/lib/family";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -113,6 +114,7 @@ export const OnlineChallenge = ({
     if (!user) return;
     setBusy(true);
     const { error } = await supabase.from("game_challenges").insert({
+      family_id: await getMyFamilyId(),
       game_key: gameKey,
       host_id: user.id,
       host_name: myName,
