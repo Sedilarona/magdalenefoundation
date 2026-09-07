@@ -22,6 +22,9 @@ import FamilyArt from "./pages/FamilyArt";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import PendingAccess from "./pages/PendingAccess";
+import RequestFamily from "./pages/RequestFamily";
+import FamilyAdmin from "./pages/FamilyAdmin";
 
 import Crossword from "./games/Crossword";
 import BibleTrivia from "./games/BibleTrivia";
