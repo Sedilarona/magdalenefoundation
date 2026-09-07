@@ -23,6 +23,7 @@ import { Logo } from "@/components/Logo";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyFamilyId } from "@/lib/family";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -384,8 +385,10 @@ const Tales = () => {
       return;
     }
     setSaving(true);
+    const familyId = await getMyFamilyId();
     const { error } = await supabase.from("tales").insert({
       user_id: user.id,
+      family_id: familyId,
       title: form.title.trim(),
       category: form.category,
       content: form.content.trim(),

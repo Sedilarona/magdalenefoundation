@@ -33,6 +33,7 @@ import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyFamilyId } from "@/lib/family";
 import { useToast } from "@/hooks/use-toast";
 
 const navItems = [
@@ -144,6 +145,7 @@ const Library = () => {
         if (upErr) throw upErr;
         const { error: dbErr } = await supabase.from("media_uploads").insert({
           user_id: user.id,
+          family_id: await getMyFamilyId(),
           category: selectedCategory.id,
           storage_path: path,
           file_name: file.name,

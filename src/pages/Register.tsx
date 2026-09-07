@@ -1,125 +1,76 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, GitBranch } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, MailCheck, ShieldAlert } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-const FAMILY_BRANCHES = [
-  "Teko Mazile (branch)",
-  "Mmasane Bodilenyane (branch)",
-  "Onkgopotse Boy Bodilenyane (branch)",
-  "Sechele Bodilenyane (branch)",
-  "Masego Bodilenyane (branch)",
-  "Thuso Bodilenyane (branch)",
-  "Letsogile 'Stanley' Bodilenyane (branch)",
-  "Stanley Poane (branch)",
-  "Magdeline Bodilenyane (branch)",
-  "Other / Extended family",
-];
-
-interface FamilyName {
+interface InviteDetails {
   full_name: string;
-  gender: string | null;
-  birth_year: string | null;
+  email: string | null;
+  family_name: string;
+  role: string;
+  valid: boolean;
 }
 
 const Register = () => {
+  const [params] = useSearchParams();
+  const token = params.get("invite") ?? "";
+
+  const [invite, setInvite] = useState<InviteDetails | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(Boolean(token));
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    familyBranch: "",
-  });
   const [isLoading, setIsLoading] = useState(false);
-  const [names, setNames] = useState<FamilyName[]>([]);
-  const [namesLoading, setNamesLoading] = useState(true);
+  const [confirmSent, setConfirmSent] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "", confirmPassword: "" });
 
   const { signUp } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
-  // Only people already recorded in the family tree may open an account.
+  // Joining a family is invitation-only: the link decides who you are.
   useEffect(() => {
+    if (!token) return;
     let cancelled = false;
     (async () => {
-      const { data } = await supabase.rpc("list_family_names");
+      const { data } = await (supabase as any).rpc("get_invite_details", { _token: token });
       if (cancelled) return;
-      const rows = ((data ?? []) as unknown as FamilyName[])
-        .filter((r) => r.full_name)
-        .sort((a, b) => a.full_name.localeCompare(b.full_name));
-      setNames(rows);
-      setNamesLoading(false);
+      const row = Array.isArray(data) ? data[0] : data;
+      setInvite(row ?? null);
+      if (row?.email) setFormData((p) => ({ ...p, email: row.email }));
+      setInviteLoading(false);
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const selectedMember = names.find((n) => n.full_name === formData.fullName);
+    return () => { cancelled = true; };
+  }, [token]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.id]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.fullName || !formData.email || !formData.password || !formData.familyBranch) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields including your family branch.",
-        variant: "destructive",
-      });
+    if (!invite?.valid) return;
+
+    if (!formData.email || !formData.password) {
+      toast({ title: "Missing fields", description: "Email and password are required.", variant: "destructive" });
       return;
     }
-
-    if (!selectedMember) {
-      toast({
-        title: "Name not in the family tree",
-        description: "Please pick your name from the list. Only recorded family members can join.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-
     if (formData.password !== formData.confirmPassword) {
       toast({ title: "Passwords don't match", description: "Please make sure your passwords match.", variant: "destructive" });
       return;
     }
-
-    if (formData.password.length < 6) {
-      toast({ title: "Password too short", description: "Password must be at least 6 characters.", variant: "destructive" });
+    if (formData.password.length < 8) {
+      toast({ title: "Password too short", description: "Use at least 8 characters.", variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
-
-    const { error } = await signUp(formData.email, formData.password, formData.fullName);
-
-    if (!error) {
-      // Persist branch selection onto the profile once it exists
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          await supabase.from("profiles").update({ family_branch: formData.familyBranch }).eq("user_id", user.id);
-        }
-      } catch (_) {}
-    }
-
+    const { error } = await signUp(formData.email, formData.password, invite.full_name, token);
     setIsLoading(false);
 
     if (error) {
@@ -130,236 +81,152 @@ const Register = () => {
           : error.message,
         variant: "destructive",
       });
-    } else {
-      toast({ title: "Welcome to the family!", description: "Your account has been created successfully." });
-      navigate("/dashboard");
+      return;
     }
+
+    setConfirmSent(true);
+  };
+
+  const renderBody = () => {
+    if (confirmSent) {
+      return (
+        <div className="text-center py-6">
+          <MailCheck className="w-12 h-12 text-primary mx-auto mb-4" />
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">Confirm your email</h1>
+          <p className="text-muted-foreground text-sm">
+            We have sent a confirmation link to <strong>{formData.email}</strong>. Click it to verify
+            your address, then sign in — you will join {invite?.family_name} automatically.
+          </p>
+          <Link to="/login" className="inline-block mt-6 text-primary hover:underline">Go to sign in</Link>
+        </div>
+      );
+    }
+
+    if (!token || (!inviteLoading && !invite?.valid)) {
+      return (
+        <div className="py-4">
+          <ShieldAlert className="w-10 h-10 text-primary mb-4" />
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            Invitation required
+          </h1>
+          <p className="text-muted-foreground text-sm mb-6">
+            {token
+              ? "This invitation link is invalid, already used, or expired. Ask your family admin to send a fresh one."
+              : "Family circles are private. Ask a family admin for an invitation link, or request a circle of your own."}
+          </p>
+          <Link to="/request-family">
+            <Button variant="hero" size="lg" className="w-full">Start a new family circle</Button>
+          </Link>
+          <p className="text-center mt-8 text-muted-foreground text-sm">
+            Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
+          </p>
+        </div>
+      );
+    }
+
+    if (inviteLoading) {
+      return (
+        <div className="py-16 flex justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <h1 className="font-display text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
+        <p className="text-muted-foreground mb-6">
+          You have been invited to join <strong>{invite?.family_name}</strong>.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label className="text-foreground">Your name</Label>
+            <div className="flex items-center gap-2 h-12 rounded-md border border-border bg-muted/40 px-3">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-foreground">{invite?.full_name}</span>
+            </div>
+            <p className="text-xs text-muted-foreground">Set by your invitation. You can add more details after signing in.</p>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-foreground">Email Address</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input id="email" type="email" placeholder="you@example.com" value={formData.email}
+                onChange={handleChange} className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
+                required disabled={isLoading} />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-foreground">Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input id="password" type={showPassword ? "text" : "password"} placeholder="At least 8 characters"
+                value={formData.password} onChange={handleChange}
+                className="pl-11 pr-11 h-12 bg-card border-sage-200 focus:border-primary" required disabled={isLoading} />
+              <button type="button" onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <Input id="confirmPassword" type={showPassword ? "text" : "password"} placeholder="Confirm your password"
+                value={formData.confirmPassword} onChange={handleChange}
+                className="pl-11 h-12 bg-card border-sage-200 focus:border-primary" required disabled={isLoading} />
+            </div>
+          </div>
+
+          <Button type="submit" variant="hero" className="w-full mt-6" size="lg" disabled={isLoading}>
+            {isLoading ? (<><Loader2 className="w-5 h-5 mr-2 animate-spin" />Creating account...</>)
+              : (<>Create Account<ArrowRight className="w-5 h-5 ml-2" /></>)}
+          </Button>
+        </form>
+
+        <p className="text-center mt-8 text-muted-foreground">
+          Already have an account?{" "}
+          <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
+        </p>
+      </>
+    );
   };
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel - Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
-        >
-          <Link to="/" className="inline-block mb-8">
-            <Logo size="md" />
-          </Link>
-
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            Create Your Account
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            Join the Magdalene Foundation and connect with your family.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-foreground">
-                Your Name (as recorded in the family tree)
-              </Label>
-              <Select
-                value={formData.fullName}
-                onValueChange={(v) => setFormData((p) => ({ ...p, fullName: v }))}
-                disabled={isLoading || namesLoading}
-              >
-                <SelectTrigger id="fullName" className="h-12 bg-card border-sage-200">
-                  <div className="flex items-center gap-2 truncate">
-                    <User className="w-4 h-4 shrink-0 text-muted-foreground" />
-                    <SelectValue
-                      placeholder={namesLoading ? "Loading family names..." : "Select your name"}
-                    />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="max-h-72">
-                  {names.map((n) => (
-                    <SelectItem key={n.full_name} value={n.full_name}>
-                      {n.full_name}
-                      {n.birth_year ? ` · ${n.birth_year}` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedMember ? (
-                <p className="text-xs text-muted-foreground">
-                  On record: {selectedMember.gender ?? "gender not recorded"}
-                  {selectedMember.birth_year ? `, born ${selectedMember.birth_year}` : ""}. You can add
-                  your phone, birthday, occupation and services after signing up.
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  Your name must already exist in the family tree. Ask an elder to add you if it is
-                  missing.
-                </p>
-              )}
-            </div>
-
-
-            <div className="space-y-2">
-              <Label htmlFor="familyBranch" className="text-foreground">Family Branch</Label>
-              <Select
-                value={formData.familyBranch}
-                onValueChange={(v) => setFormData((p) => ({ ...p, familyBranch: v }))}
-                disabled={isLoading}
-              >
-                <SelectTrigger id="familyBranch" className="h-12 bg-card border-sage-200">
-                  <div className="flex items-center gap-2">
-                    <GitBranch className="w-4 h-4 text-muted-foreground" />
-                    <SelectValue placeholder="Select the branch you belong to" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {FAMILY_BRANCHES.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">Registration is limited to Magdalene family members and descendants.</p>
-            </div>
-
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
-                Email Address
-              </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a secure password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="pl-11 pr-11 h-12 bg-card border-sage-200 focus:border-primary"
-                  required
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-5 h-5" />
-                  ) : (
-                    <Eye className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-foreground">
-                Confirm Password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="pl-11 h-12 bg-card border-sage-200 focus:border-primary"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            <Button type="submit" variant="hero" className="w-full mt-6" size="lg" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                <>
-                  Create Account
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          <p className="text-center mt-8 text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
-          </p>
-
-          <p className="text-center mt-4 text-xs text-muted-foreground">
-            By signing up, you agree to our{" "}
-            <Link to="/terms" className="text-primary hover:underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link to="/privacy" className="text-primary hover:underline">
-              Privacy Policy
-            </Link>
-          </p>
+        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }} className="w-full max-w-md">
+          <Link to="/" className="inline-block mb-8"><Logo size="md" /></Link>
+          {renderBody()}
         </motion.div>
       </div>
 
-      {/* Right Panel - Decorative */}
       <div className="hidden lg:flex w-1/2 bg-gradient-to-br from-sage-500 via-sage-600 to-accent items-center justify-center p-12 relative overflow-hidden">
-        {/* Decorative elements */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 right-20 w-72 h-72 border-2 border-primary-foreground rounded-full" />
           <div className="absolute bottom-32 left-16 w-40 h-40 border border-primary-foreground rounded-full" />
           <div className="absolute top-1/3 right-1/3 w-56 h-56 border border-primary-foreground rounded-full" />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center relative z-10 max-w-lg"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }} className="text-center relative z-10 max-w-lg">
           <h2 className="font-display text-4xl font-bold text-primary-foreground mb-6">
             Build Your Family's Digital Home
           </h2>
           <p className="text-primary-foreground/80 text-lg mb-8">
-            Preserve genealogy, share stories, and strengthen bonds that transcend 
-            time and distance.
+            Preserve genealogy, share stories, and strengthen bonds that transcend time and distance.
           </p>
-          
+
           <div className="grid grid-cols-2 gap-4 text-left">
-            {[
-              "Interactive Family Trees",
-              "Story Preservation",
-              "Services Directory",
-              "MAGGIE AI Assistant",
-            ].map((feature, i) => (
-              <motion.div
-                key={feature}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.1 }}
-                className="flex items-center gap-2 text-primary-foreground/90"
-              >
+            {["Private family circles", "Story Preservation", "Services Directory", "MAGGIE AI Assistant"].map((feature, i) => (
+              <motion.div key={feature} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }} className="flex items-center gap-2 text-primary-foreground/90">
                 <div className="w-2 h-2 rounded-full bg-primary-foreground" />
                 <span className="text-sm">{feature}</span>
               </motion.div>
