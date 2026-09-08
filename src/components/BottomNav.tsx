@@ -16,6 +16,7 @@ import {
   Palette,
   Trophy,
   Settings,
+  ShieldCheck,
   User,
   LogOut,
 } from "lucide-react";
@@ -42,11 +43,13 @@ const moreItems = [
   { icon: Settings, label: "Settings", href: "/settings" },
 ];
 
+const adminItem = { icon: ShieldCheck, label: "Family Admin", href: "/family-admin" };
+
 /** Fixed heritage bottom navigation. */
 export const BottomNav = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, family } = useAuth();
 
   return (
     <>
@@ -105,7 +108,7 @@ export const BottomNav = () => {
           </SheetHeader>
           <AnimatePresence>
             <div className="mt-4 grid grid-cols-2 gap-3 pb-6">
-              {moreItems.map((item, i) => (
+              {[...moreItems, ...(family?.is_admin || family?.is_platform_admin ? [adminItem] : [])].map((item, i) => (
                 <motion.div
                   key={item.label}
                   initial={{ opacity: 0, y: 8 }}
