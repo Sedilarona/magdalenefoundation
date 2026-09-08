@@ -463,36 +463,6 @@ const Dashboard = () => {
         </div>
 
 
-        {/* Announcements */}
-        <Card className="mt-4" delay={0.18}>
-          <SectionTitle icon={Bell}>Recent Announcements</SectionTitle>
-          {announcements.length === 0 ? (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              No announcements yet — the archive is quiet today.
-            </p>
-          ) : (
-            <ul className="space-y-3">
-              {announcements.slice(0, 4).map((a) => (
-                <li
-                  key={a.id}
-                  className="flex items-start gap-3 rounded-2xl border border-border/60 bg-muted/40 p-3"
-                >
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold/15">
-                    {a.announcement_type === "birthday" ? (
-                      <Cake className="h-4 w-4 text-gold" aria-hidden="true" />
-                    ) : (
-                      <Bell className="h-4 w-4 text-gold" aria-hidden="true" />
-                    )}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-foreground">{a.title}</p>
-                    <p className="text-sm text-muted-foreground">{a.description}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
 
         {/* Ask MAGGIE */}
         <Card className="mt-4 bg-[var(--gradient-crest)] text-ivory" delay={0.22}>
