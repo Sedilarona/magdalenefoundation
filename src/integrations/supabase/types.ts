@@ -461,6 +461,44 @@ export type Database = {
         }
         Relationships: []
       }
+      login_activity: {
+        Row: {
+          created_at: string
+          event: string
+          family_id: string | null
+          full_name: string | null
+          id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event?: string
+          family_id?: string | null
+          full_name?: string | null
+          id?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          family_id?: string | null
+          full_name?: string | null
+          id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "login_activity_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       media_uploads: {
         Row: {
           caption: string | null
@@ -507,6 +545,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pending_platform_admins: {
+        Row: {
+          created_at: string
+          email: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+        }
+        Relationships: []
       }
       platform_admins: {
         Row: {
@@ -727,6 +780,16 @@ export type Database = {
     Functions: {
       accept_family_invite: { Args: { _token: string }; Returns: Json }
       current_family_id: { Args: never; Returns: string }
+      family_activity_report: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          full_name: string
+          last_login: string
+          login_count: number
+          user_id: string
+        }[]
+      }
       get_invite_details: {
         Args: { _token: string }
         Returns: {
@@ -768,6 +831,7 @@ export type Database = {
           status: string
         }[]
       }
+      record_login: { Args: { _user_agent?: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
