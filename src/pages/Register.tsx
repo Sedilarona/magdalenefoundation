@@ -111,12 +111,9 @@ const Register = () => {
           </h1>
           <p className="text-muted-foreground text-sm mb-6">
             {token
-              ? "This invitation link is invalid, already used, or expired. Ask your family admin to send a fresh one."
-              : "Family circles are private. Ask a family admin for an invitation link, or request a circle of your own."}
+              ? "This invitation link is invalid, already used, or expired. Ask the family admin to send you a fresh one."
+              : "The Magdalene Foundation family archive is private. Ask the family admin for your personal invitation link."}
           </p>
-          <Link to="/request-family">
-            <Button variant="hero" size="lg" className="w-full">Start a new family circle</Button>
-          </Link>
           <p className="text-center mt-8 text-muted-foreground text-sm">
             Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
           </p>
