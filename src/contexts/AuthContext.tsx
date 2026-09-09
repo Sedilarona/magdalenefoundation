@@ -40,6 +40,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
   acceptInvite: (token: string) => Promise<{ ok: boolean; error?: string }>;
+  requestPasswordReset: (email: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
