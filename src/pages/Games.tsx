@@ -198,7 +198,7 @@ const Games = () => {
 
 
           {/* Category Filter */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-8">
             <Button
               variant={selectedCategory === null ? "default" : "outline"}
               size="sm"
@@ -214,63 +214,90 @@ const Games = () => {
                 onClick={() => setSelectedCategory(category)}
               >
                 {category}
+                <span className="ml-2 text-xs opacity-70">
+                  {games.filter((g) => g.category === category).length}
+                </span>
               </Button>
             ))}
           </div>
 
-          {/* Games Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGames.map((game, index) => (
-              <motion.div
-                key={game.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="bg-card rounded-2xl border border-sage-100 shadow-card overflow-hidden hover:shadow-elevated transition-all hover:-translate-y-1 group"
-              >
-                {/* Game Header */}
-                <div className={`bg-gradient-to-r ${game.color} p-6`}>
-                  <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center mb-4">
-                    <game.icon className="w-7 h-7 text-primary-foreground" />
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                    {game.title}
-                  </h3>
-                </div>
-
-                {/* Game Details */}
-                <div className="p-6">
-                  <p className="text-muted-foreground mb-4">{game.description}</p>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs bg-sage-100 text-sage-700 px-3 py-1 rounded-full">
-                      {game.category}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{game.players}</span>
-                  </div>
-
-                  <Button 
-                    className="w-full gap-2" 
-                    variant={game.available ? "default" : "secondary"}
-                    disabled={!game.available}
-                    onClick={() => game.available && navigate(game.route)}
+          {/* Games grouped by category */}
+          <div className="space-y-10">
+            {(selectedCategory ? [selectedCategory] : categories).map((category, ci) => (
+              <section key={category} aria-labelledby={`cat-${category.replace(/\s+/g, "-")}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <h2
+                    id={`cat-${category.replace(/\s+/g, "-")}`}
+                    className="font-display text-xl font-semibold text-foreground"
                   >
-                    {game.available ? (
-                      <>
-                        <Play className="w-4 h-4" />
-                        Play Now
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-4 h-4" />
-                        Coming Soon
-                      </>
-                    )}
-                  </Button>
+                    {category}
+                  </h2>
+                  <span className="h-px flex-1 bg-border" aria-hidden="true" />
+                  <span className="text-xs text-muted-foreground">
+                    {games.filter((g) => g.category === category).length} games
+                  </span>
                 </div>
-              </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {games
+                    .filter((g) => g.category === category)
+                    .map((game, index) => (
+                      <motion.div
+                        key={game.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: Math.min(ci * 0.05 + index * 0.05, 0.5) }}
+                        whileHover={{ y: -6 }}
+                        className="bg-card rounded-2xl border border-border shadow-card overflow-hidden hover:shadow-elevated transition-shadow group"
+                      >
+                        <div className={`bg-gradient-to-r ${game.color} p-6`}>
+                          <motion.div
+                            whileHover={{ rotate: 8, scale: 1.06 }}
+                            className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center mb-4"
+                          >
+                            <game.icon className="w-7 h-7 text-primary-foreground" />
+                          </motion.div>
+                          <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                            {game.title}
+                          </h3>
+                        </div>
+
+                        <div className="p-6">
+                          <p className="text-muted-foreground mb-4">{game.description}</p>
+
+                          <div className="flex items-center justify-between mb-4">
+                            <span className="text-xs bg-secondary text-secondary-foreground px-3 py-1 rounded-full">
+                              {game.category}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{game.players}</span>
+                          </div>
+
+                          <Button
+                            className="w-full gap-2"
+                            variant={game.available ? "default" : "secondary"}
+                            disabled={!game.available}
+                            onClick={() => game.available && navigate(game.route)}
+                          >
+                            {game.available ? (
+                              <>
+                                <Play className="w-4 h-4" />
+                                Play Now
+                              </>
+                            ) : (
+                              <>
+                                <Lock className="w-4 h-4" />
+                                Coming Soon
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                </div>
+              </section>
             ))}
           </div>
+
 
           {/* Coming Soon Note */}
           <motion.div

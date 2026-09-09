@@ -23,8 +23,10 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import PendingAccess from "./pages/PendingAccess";
-import RequestFamily from "./pages/RequestFamily";
 import FamilyAdmin from "./pages/FamilyAdmin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ActivityReport from "./pages/Activity";
 
 import Crossword from "./games/Crossword";
 import BibleTrivia from "./games/BibleTrivia";
@@ -55,9 +57,11 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/request-family" element={<RequestFamily />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/pending" element={<PendingAccess />} />
             <Route path="/family-admin" element={<ProtectedRoute><FamilyAdmin /></ProtectedRoute>} />
+            <Route path="/activity" element={<ProtectedRoute><ActivityReport /></ProtectedRoute>} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/family-tree" element={<ProtectedRoute><FamilyTree /></ProtectedRoute>} />
