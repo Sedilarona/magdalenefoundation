@@ -142,6 +142,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    // Keep a sign-in trail so admins can see who is active and who has never signed in.
+    if (!error) {
+      try {
+        await (supabase as any).rpc("record_login", { _user_agent: navigator.userAgent });
+      } catch {
+        // Never block a sign-in because the activity log failed.
+      }
+    }
+
+    return { error };
+  };
+
+  const requestPasswordReset = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
     return { error };
   };
 
