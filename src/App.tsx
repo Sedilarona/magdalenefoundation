@@ -25,6 +25,9 @@ import NotFound from "./pages/NotFound";
 import PendingAccess from "./pages/PendingAccess";
 import RequestFamily from "./pages/RequestFamily";
 import FamilyAdmin from "./pages/FamilyAdmin";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ActivityReport from "./pages/Activity";
 
 import Crossword from "./games/Crossword";
 import BibleTrivia from "./games/BibleTrivia";
