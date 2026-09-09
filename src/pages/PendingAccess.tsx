@@ -97,10 +97,7 @@ const PendingAccess = () => {
           </>
         )}
 
-        <div className="mt-8 flex items-center justify-between text-sm">
-          <Link to="/request-family" className="text-primary hover:underline">
-            Start a new family circle
-          </Link>
+        <div className="mt-8 flex items-center justify-end text-sm">
           <button onClick={signOut} className="text-muted-foreground hover:text-foreground">
             Sign out
           </button>
