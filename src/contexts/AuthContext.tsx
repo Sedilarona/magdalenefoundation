@@ -112,18 +112,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, [fetchProfile, redeemPendingInvite]);
 
-  const signUp = async (email: string, password: string, fullName: string, inviteToken: string) => {
+  const signUp = async (email: string, password: string, fullName: string, familyMemberId: string) => {
     const redirectUrl = `${window.location.origin}/login`;
-
-    // Remember the invitation so it can be redeemed after the email is confirmed.
-    if (inviteToken) localStorage.setItem(PENDING_INVITE_KEY, inviteToken);
 
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { full_name: fullName, invite_token: inviteToken },
+        data: { full_name: fullName, family_member_id: familyMemberId },
       },
     });
 
