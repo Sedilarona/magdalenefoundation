@@ -22,11 +22,16 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (!RESEND_API_KEY) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
 
     const { profileId, fullName, email, location, generation }: ProfileNotificationRequest = await req.json();
+
+    if (!RESEND_API_KEY) {
+      console.warn("Email not configured; skipping notification for", fullName);
+      return new Response(
+        JSON.stringify({ success: true, skipped: true, reason: "email_not_configured" }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
 
     console.log("Sending notification for new profile:", fullName);
 
