@@ -33,14 +33,14 @@ const PendingAccess = () => {
     const res = await acceptInvite(token.trim());
     setBusy(false);
     if (res.ok) {
-      toast({ title: "Welcome home", description: "You have joined your family circle." });
+      toast({ title: "Welcome home", description: "You have joined the Magdalene family." });
       navigate("/dashboard", { replace: true });
     } else {
       toast({
         title: "That invitation did not work",
         description:
           res.error === "family_not_active"
-            ? "This family circle is still waiting for approval."
+            ? "The family archive is still waiting for approval."
             : "The invitation is invalid, already used, or expired. Ask your family admin for a new one.",
         variant: "destructive",
       });
@@ -62,7 +62,7 @@ const PendingAccess = () => {
           <>
             <ShieldCheck className="w-10 h-10 text-primary mb-4" />
             <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-              Your family circle is awaiting approval
+              Your access is awaiting approval
             </h1>
             <p className="text-muted-foreground text-sm">
               {family?.family_name} has been requested and is being reviewed. You will be able to
