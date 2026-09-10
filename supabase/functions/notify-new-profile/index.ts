@@ -98,7 +98,11 @@ const handler = async (req: Request): Promise<Response> => {
     if (!res.ok) {
       const errorText = await res.text();
       console.error("Resend API error:", errorText);
-      throw new Error(`Failed to send email: ${errorText}`);
+      // Never fail the profile flow because of email problems
+      return new Response(
+        JSON.stringify({ success: false, emailError: errorText }),
+        { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     const data = await res.json();
