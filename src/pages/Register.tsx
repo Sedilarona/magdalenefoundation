@@ -1,29 +1,27 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Link, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Loader2, MailCheck, ShieldAlert } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, MailCheck } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-interface InviteDetails {
+interface FamilyName {
+  id: string;
   full_name: string;
-  email: string | null;
-  family_name: string;
-  role: string;
-  valid: boolean;
 }
 
 const Register = () => {
-  const [params] = useSearchParams();
-  const token = params.get("invite") ?? "";
-
-  const [invite, setInvite] = useState<InviteDetails | null>(null);
-  const [inviteLoading, setInviteLoading] = useState(Boolean(token));
+  const [names, setNames] = useState<FamilyName[]>([]);
+  const [namesLoading, setNamesLoading] = useState(true);
+  const [memberId, setMemberId] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmSent, setConfirmSent] = useState(false);
@@ -32,20 +30,17 @@ const Register = () => {
   const { signUp } = useAuth();
   const { toast } = useToast();
 
-  // Joining a family is invitation-only: the link decides who you are.
+  // Only people who appear in the family tree can create an account.
   useEffect(() => {
-    if (!token) return;
     let cancelled = false;
     (async () => {
-      const { data } = await (supabase as any).rpc("get_invite_details", { _token: token });
+      const { data } = await (supabase as any).rpc("signup_family_names");
       if (cancelled) return;
-      const row = Array.isArray(data) ? data[0] : data;
-      setInvite(row ?? null);
-      if (row?.email) setFormData((p) => ({ ...p, email: row.email }));
-      setInviteLoading(false);
+      setNames((data ?? []) as FamilyName[]);
+      setNamesLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [token]);
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
@@ -54,8 +49,11 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!invite?.valid) return;
-
+    const chosen = names.find((n) => n.id === memberId);
+    if (!chosen) {
+      toast({ title: "Choose your name", description: "Select your name from the family tree.", variant: "destructive" });
+      return;
+    }
     if (!formData.email || !formData.password) {
       toast({ title: "Missing fields", description: "Email and password are required.", variant: "destructive" });
       return;
@@ -70,7 +68,7 @@ const Register = () => {
     }
 
     setIsLoading(true);
-    const { error } = await signUp(formData.email, formData.password, invite.full_name, token);
+    const { error } = await signUp(formData.email, formData.password, chosen.full_name, chosen.id);
     setIsLoading(false);
 
     if (error) {
@@ -95,36 +93,9 @@ const Register = () => {
           <h1 className="font-display text-2xl font-bold text-foreground mb-2">Confirm your email</h1>
           <p className="text-muted-foreground text-sm">
             We have sent a confirmation link to <strong>{formData.email}</strong>. Click it to verify
-            your address, then sign in — you will join {invite?.family_name} automatically.
+            your address, then sign in.
           </p>
           <Link to="/login" className="inline-block mt-6 text-primary hover:underline">Go to sign in</Link>
-        </div>
-      );
-    }
-
-    if (!token || (!inviteLoading && !invite?.valid)) {
-      return (
-        <div className="py-4">
-          <ShieldAlert className="w-10 h-10 text-primary mb-4" />
-          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
-            Invitation required
-          </h1>
-          <p className="text-muted-foreground text-sm mb-6">
-            {token
-              ? "This invitation link is invalid, already used, or expired. Ask the family admin to send you a fresh one."
-              : "The Magdalene Foundation family archive is private. Ask the family admin for your personal invitation link."}
-          </p>
-          <p className="text-center mt-8 text-muted-foreground text-sm">
-            Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign in</Link>
-          </p>
-        </div>
-      );
-    }
-
-    if (inviteLoading) {
-      return (
-        <div className="py-16 flex justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       );
     }
@@ -133,17 +104,25 @@ const Register = () => {
       <>
         <h1 className="font-display text-3xl font-bold text-foreground mb-2">Create Your Account</h1>
         <p className="text-muted-foreground mb-6">
-          You have been invited to join <strong>{invite?.family_name}</strong>.
+          Find your name in the family tree and set up your sign-in details.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-foreground">Your name</Label>
-            <div className="flex items-center gap-2 h-12 rounded-md border border-border bg-muted/40 px-3">
-              <User className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{invite?.full_name}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Set by your invitation. You can add more details after signing in.</p>
+            <Select value={memberId} onValueChange={setMemberId} disabled={isLoading || namesLoading}>
+              <SelectTrigger className="h-12">
+                <SelectValue placeholder={namesLoading ? "Loading family names..." : "Select your name"} />
+              </SelectTrigger>
+              <SelectContent className="max-h-72">
+                {names.map((n) => (
+                  <SelectItem key={n.id} value={n.id}>{n.full_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              You can add your birthday, occupation and more after signing in.
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -193,6 +172,7 @@ const Register = () => {
       </>
     );
   };
+
 
   return (
     <div className="min-h-screen flex">

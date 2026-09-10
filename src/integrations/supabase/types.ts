@@ -832,6 +832,14 @@ export type Database = {
         }[]
       }
       record_login: { Args: { _user_agent?: string }; Returns: undefined }
+      signup_family_names: {
+        Args: never
+        Returns: {
+          full_name: string
+          gender: string
+          id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
