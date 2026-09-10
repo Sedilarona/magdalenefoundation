@@ -77,7 +77,7 @@ const Login = () => {
             Welcome Back
           </h1>
           <p className="text-muted-foreground mb-8">
-            Sign in to continue to your family circle.
+            Sign in to continue to the Magdalene family archive.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-5">

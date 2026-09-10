@@ -221,7 +221,7 @@ const Register = () => {
           </p>
 
           <div className="grid grid-cols-2 gap-4 text-left">
-            {["Private family circles", "Story Preservation", "Services Directory", "MAGGIE AI Assistant"].map((feature, i) => (
+            {["Private family archive", "Story Preservation", "Services Directory", "MAGGIE AI Assistant"].map((feature, i) => (
               <motion.div key={feature} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + i * 0.1 }} className="flex items-center gap-2 text-primary-foreground/90">
                 <div className="w-2 h-2 rounded-full bg-primary-foreground" />
