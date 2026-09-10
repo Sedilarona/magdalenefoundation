@@ -34,7 +34,7 @@ interface AuthContextType {
     email: string,
     password: string,
     fullName: string,
-    inviteToken: string,
+    familyMemberId: string,
   ) => Promise<{ error: Error | null; needsConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
