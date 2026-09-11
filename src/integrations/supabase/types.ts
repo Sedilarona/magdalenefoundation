@@ -741,6 +741,47 @@ export type Database = {
           },
         ]
       }
+      user_progress: {
+        Row: {
+          created_at: string
+          family_id: string | null
+          game_state: Json
+          last_label: string | null
+          last_route: string | null
+          last_seen_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          family_id?: string | null
+          game_state?: Json
+          last_label?: string | null
+          last_route?: string | null
+          last_seen_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          family_id?: string | null
+          game_state?: Json
+          last_label?: string | null
+          last_route?: string | null
+          last_seen_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_progress_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
