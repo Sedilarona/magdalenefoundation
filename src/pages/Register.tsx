@@ -42,6 +42,15 @@ const Register = () => {
     return () => { cancelled = true; };
   }, []);
 
+  const handleNameSelect = (value: string) => {
+    setMemberId(value);
+    const chosen = names.find((n) => n.id === value);
+    toast({
+      title: "Make sure you have selected your name",
+      description: chosen ? `You selected ${chosen.full_name}. Double-check it is really you.` : undefined,
+    });
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
@@ -74,8 +83,8 @@ const Register = () => {
     if (error) {
       toast({
         title: "Registration failed",
-        description: error.message.includes("already registered")
-          ? "This email is already registered. Please sign in instead."
+        description: /already registered|already been registered|User already/i.test(error.message)
+          ? "This email is already used by another family member. Each person needs their own email address."
           : error.message,
         variant: "destructive",
       });
@@ -110,7 +119,7 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-foreground">Your name</Label>
-            <Select value={memberId} onValueChange={setMemberId} disabled={isLoading || namesLoading}>
+            <Select value={memberId} onValueChange={handleNameSelect} disabled={isLoading || namesLoading}>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder={namesLoading ? "Loading family names..." : "Select your name"} />
               </SelectTrigger>

@@ -779,6 +779,7 @@ export type Database = {
     }
     Functions: {
       accept_family_invite: { Args: { _token: string }; Returns: Json }
+      claim_family_member: { Args: { _member_id: string }; Returns: Json }
       current_family_id: { Args: never; Returns: string }
       family_activity_report: {
         Args: never

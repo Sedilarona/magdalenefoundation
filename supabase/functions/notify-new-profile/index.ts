@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const NOTIFICATION_EMAIL = "olefile.poane@gmail.com";
+const NOTIFICATION_EMAILS = ["sedilaronabw@gmail.com", "olefile.poane@gmail.com"];
 
 interface ProfileNotificationRequest {
   profileId: string;
@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Magdalene Family <onboarding@resend.dev>",
-        to: [NOTIFICATION_EMAIL],
+        to: NOTIFICATION_EMAILS,
         subject: `New Family Member Profile: ${fullName}`,
         html: `
           <!DOCTYPE html>
