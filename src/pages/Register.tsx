@@ -110,7 +110,7 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-foreground">Your name</Label>
-            <Select value={memberId} onValueChange={setMemberId} disabled={isLoading || namesLoading}>
+            <Select value={memberId} onValueChange={handleNameSelect} disabled={isLoading || namesLoading}>
               <SelectTrigger className="h-12">
                 <SelectValue placeholder={namesLoading ? "Loading family names..." : "Select your name"} />
               </SelectTrigger>
