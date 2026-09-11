@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const NOTIFICATION_EMAIL = "olefile.poane@gmail.com";
+const NOTIFICATION_EMAILS = ["sedilaronabw@gmail.com", "olefile.poane@gmail.com"];
 
 interface ProfileNotificationRequest {
   profileId: string;
