@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 interface FamilyName {
   id: string;
   full_name: string;
+  taken?: boolean;
 }
 
 const Register = () => {
@@ -125,7 +126,9 @@ const Register = () => {
               </SelectTrigger>
               <SelectContent className="max-h-72">
                 {names.map((n) => (
-                  <SelectItem key={n.id} value={n.id}>{n.full_name}</SelectItem>
+                  <SelectItem key={n.id} value={n.id} disabled={n.taken}>
+                    {n.full_name}{n.taken ? " (already registered)" : ""}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -880,6 +880,7 @@ export type Database = {
           full_name: string
           gender: string
           id: string
+          taken: boolean
         }[]
       }
     }

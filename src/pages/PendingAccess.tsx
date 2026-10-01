@@ -45,7 +45,7 @@ const PendingAccess = () => {
     (async () => {
       const { data } = await (supabase as any).rpc("signup_family_names");
       if (cancelled) return;
-      setNames((data ?? []) as TreeName[]);
+      setNames(((data ?? []) as (TreeName & { taken?: boolean })[]).filter((n) => !n.taken));
       setNamesLoading(false);
     })();
     return () => { cancelled = true; };
