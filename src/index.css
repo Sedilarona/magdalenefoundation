@@ -317,3 +317,28 @@
   .bg-cream { background-color: hsl(var(--cream)); }
   .bg-warm-white { background-color: hsl(var(--warm-white)); }
 }
+
+/* App-wide motion: cards rise in one after another and lift on hover. */
+@layer utilities {
+  @keyframes rise-in { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
+  .app-animated .rounded-lg.border,
+  .app-animated .rounded-xl,
+  .app-animated .rounded-2xl {
+    animation: rise-in .5s ease-out both;
+    transition: transform .25s ease, box-shadow .25s ease;
+  }
+  .app-animated :is(.grid, .space-y-4, .space-y-3) > *:nth-child(2) { animation-delay: .06s; }
+  .app-animated :is(.grid, .space-y-4, .space-y-3) > *:nth-child(3) { animation-delay: .12s; }
+  .app-animated :is(.grid, .space-y-4, .space-y-3) > *:nth-child(4) { animation-delay: .18s; }
+  .app-animated :is(.grid, .space-y-4, .space-y-3) > *:nth-child(n+5) { animation-delay: .24s; }
+  .app-animated a.rounded-xl:hover, .app-animated a.rounded-2xl:hover,
+  .app-animated button.rounded-xl:hover, .app-animated button.rounded-2xl:hover,
+  .app-animated .rounded-lg.border:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px -12px hsl(var(--primary) / .35);
+  }
+  .app-animated button:active { transform: scale(.97); }
+  @media (prefers-reduced-motion: reduce) {
+    .app-animated * { animation: none !important; transition: none !important; }
+  }
+}
