@@ -2,6 +2,8 @@ import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
+import { AmbientBackground } from "@/components/AmbientBackground";
 
 /**
  * Blocks every app feature until the visitor has signed in AND belongs to an
@@ -28,7 +30,20 @@ export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     return <Navigate to="/pending" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <AmbientBackground />
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="app-animated"
+      >
+        {children}
+      </motion.div>
+    </>
+  );
 };
 
 export default ProtectedRoute;
