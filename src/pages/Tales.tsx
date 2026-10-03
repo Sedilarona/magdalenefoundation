@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { NarrateButton } from "@/components/NarrateButton";
 import {
   Dialog,
   DialogContent,
@@ -332,11 +333,12 @@ const TaleModal = ({ tale, onClose }: { tale: Tale | null; onClose: () => void }
             })}
           </div>
         </div>
-        <div className="p-4 border-t border-border bg-sage-50/50">
+        <div className="p-4 border-t border-border bg-sage-50/50 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span>{tale.createdAt}</span>
           </div>
+          <NarrateButton text={`${tale.title}. ${tale.content}`} label="Listen to this tale" />
         </div>
       </motion.div>
     </motion.div>
