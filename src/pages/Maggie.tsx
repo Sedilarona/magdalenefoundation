@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { MaggieMessage } from "@/components/MaggieMessage";
+import { NarrateButton } from "@/components/NarrateButton";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -386,7 +387,14 @@ const Maggie = () => {
                       </div>
                     )}
                     {message.role === "assistant" ? (
-                      <MaggieMessage content={message.content} />
+                      <>
+                        <MaggieMessage content={message.content} />
+                        {message.content && !(isLoading && message === messages[messages.length - 1]) && (
+                          <div className="mt-2">
+                            <NarrateButton text={message.content} label="Hear Maggie" />
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
                     )}
