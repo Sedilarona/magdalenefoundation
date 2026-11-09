@@ -9,6 +9,8 @@
 - [x] Invite name picker without birth year
 - [x] Single-family only: remove all "other families" paths and wording (Magdalene Foundation only)
 - [x] Games grouped by category
-- [ ] Light-mode font visibility pass
+- [x] Light-mode font visibility pass
+- [x] Social media links on profile (personal/business)
+- [x] Continue where you left off card
 - [ ] More graphics/animations across the app
 - [ ] Family Resources: "Starting A Business in Botswana" (PDF still needed from user)

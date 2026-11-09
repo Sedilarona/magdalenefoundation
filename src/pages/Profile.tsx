@@ -70,6 +70,8 @@ const Profile = () => {
   const [birthDay, setBirthDay] = useState("");
   const [services, setServices] = useState<string[]>([]);
   const [newService, setNewService] = useState("");
+  const [social, setSocial] = useState<Record<string, string>>({});
+  const [socialType, setSocialType] = useState<"personal" | "business">("personal");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -102,7 +104,7 @@ const Profile = () => {
     
     const { data, error } = await supabase
       .from("profiles")
-      .select("phone_number, services, avatar_url, birth_year, birth_month, birth_day")
+      .select("phone_number, services, avatar_url, birth_year, birth_month, birth_day, social_links")
       .eq("user_id", user.id)
       .single();
 
@@ -114,6 +116,9 @@ const Profile = () => {
       };
       setPhoneNumber(row.phone_number || "");
       setServices(row.services || []);
+      const sl = ((row as any).social_links || {}) as Record<string, string>;
+      setSocial(sl);
+      if (sl.type === "business") setSocialType("business");
       setAvatarPath(row.avatar_url || null);
       setBirthYear(row.birth_year ? String(row.birth_year) : "");
       setBirthMonth(row.birth_month ? String(row.birth_month) : "");
@@ -177,6 +182,7 @@ const Profile = () => {
           
           phone_number: phoneNumber,
           services,
+          social_links: { ...social, type: socialType },
           birth_year: birthYear ? Number(birthYear) : null,
           birth_month: birthMonth ? Number(birthMonth) : null,
           birth_day: birthDay ? Number(birthDay) : null,
@@ -530,6 +536,45 @@ const Profile = () => {
               </div>
             </motion.div>
 
+
+            {/* Social Media Section */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-card rounded-2xl border border-sage-100 shadow-card p-6 mt-6"
+            >
+              <h3 className="font-display text-lg font-semibold text-foreground mb-2">Social Media Links</h3>
+              <p className="text-sm text-muted-foreground mb-4">Share your personal or business pages with the family.</p>
+              <div className="flex gap-2 mb-4">
+                {(["personal", "business"] as const).map((t) => (
+                  <Button key={t} type="button" size="sm" variant={socialType === t ? "default" : "outline"} onClick={() => setSocialType(t)}>
+                    {t === "personal" ? "Personal profile" : "Business profile"}
+                  </Button>
+                ))}
+              </div>
+              {socialType === "business" && (
+                <div className="space-y-2 mb-4">
+                  <Label htmlFor="biz">Business name</Label>
+                  <Input id="biz" value={social.business_name || ""} onChange={(e) => setSocial({ ...social, business_name: e.target.value })} placeholder="e.g., Poane Catering" />
+                </div>
+              )}
+              <div className="grid sm:grid-cols-2 gap-4">
+                {[
+                  ["facebook", "Facebook", "https://facebook.com/yourname"],
+                  ["whatsapp", "WhatsApp", "+267 7x xxx xxx"],
+                  ["tiktok", "TikTok", "@yourname"],
+                  ["instagram", "Instagram", "@yourname"],
+                  ["x", "X (Twitter)", "@yourname"],
+                ].map(([k, label, ph]) => (
+                  <div key={k} className="space-y-2">
+                    <Label htmlFor={`social-${k}`}>{label}</Label>
+                    <Input id={`social-${k}`} value={social[k] || ""} onChange={(e) => setSocial({ ...social, [k]: e.target.value })} placeholder={ph} />
+                  </div>
+                ))}
+              </div>
+              <Button className="mt-4" onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save links"}</Button>
+            </motion.div>
           </div>
         </main>
       </div>

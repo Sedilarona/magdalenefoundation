@@ -595,6 +595,7 @@ export type Database = {
           occupation: string | null
           phone_number: string | null
           services: string[] | null
+          social_links: Json
           updated_at: string
           user_id: string
         }
@@ -616,6 +617,7 @@ export type Database = {
           occupation?: string | null
           phone_number?: string | null
           services?: string[] | null
+          social_links?: Json
           updated_at?: string
           user_id: string
         }
@@ -637,6 +639,7 @@ export type Database = {
           occupation?: string | null
           phone_number?: string | null
           services?: string[] | null
+          social_links?: Json
           updated_at?: string
           user_id?: string
         }
