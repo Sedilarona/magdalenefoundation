@@ -26,6 +26,7 @@ import { MagdaleneCrest } from "@/components/MagdaleneCrest";
 import { BirthdaysPanel } from "@/components/BirthdaysPanel";
 import { ProfileButton } from "@/components/ProfileButton";
 import { Button } from "@/components/ui/button";
+import { ContinueCard } from "@/components/ContinueCard";
 import { Input } from "@/components/ui/input";
 import {
   Dialog,
@@ -335,6 +336,8 @@ const Dashboard = () => {
             </p>
           </div>
         </header>
+
+        <ContinueCard />
 
         {/* Stats */}
         <div className="mt-5 grid grid-cols-2 gap-3">

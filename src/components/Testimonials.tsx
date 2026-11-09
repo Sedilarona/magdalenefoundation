@@ -52,7 +52,7 @@ export const Testimonials = () => {
               className="relative"
             >
               <div className="bg-card rounded-2xl p-8 shadow-card border border-sage-100 h-full">
-                <Quote className="w-10 h-10 text-sage-200 mb-4" />
+                <Quote className="w-10 h-10 text-sage-400 mb-4" />
                 <p className="text-foreground leading-relaxed mb-6 font-display italic">
                   "{testimonial.quote}"
                 </p>
