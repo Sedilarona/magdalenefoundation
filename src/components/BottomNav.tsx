@@ -6,8 +6,6 @@ import {
   GitBranch,
   BookHeart,
   CalendarDays,
-  MoreHorizontal,
-  Library,
   Gamepad2,
   FolderOpen,
   MapPin,
@@ -19,9 +17,10 @@ import {
   ShieldCheck,
   User,
   LogOut,
+  Menu,
+  ChevronDown,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 const primaryItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -32,7 +31,6 @@ const primaryItems = [
 
 const moreItems = [
   { icon: Sparkles, label: "Ask MAGGIE", href: "/maggie" },
-  { icon: Library, label: "Family Memories", href: "/library" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: MapPin, label: "Locate Family", href: "/locate-family" },
   { icon: Wrench, label: "Family Services", href: "/family-services" },
@@ -45,108 +43,62 @@ const moreItems = [
 
 const adminItem = { icon: ShieldCheck, label: "Family Admin", href: "/family-admin" };
 
-/** Fixed heritage bottom navigation. */
+/** Top-left heritage menu with a drop-down of every section. */
 export const BottomNav = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const { user, signOut, family } = useAuth();
+  const items = [...primaryItems, ...moreItems, ...(family?.is_admin || family?.is_platform_admin ? [adminItem] : [])];
 
   return (
-    <>
-      <nav
-        aria-label="Primary"
-        className="fixed bottom-0 inset-x-0 z-40 border-t border-gold/25 bg-card/95 backdrop-blur-xl pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_28px_-18px_hsl(var(--emerald-deep)/0.5)]"
+    <div className="fixed left-3 top-3 z-50 pt-[env(safe-area-inset-top)]">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Open menu"
+        aria-expanded={open}
+        className="flex h-11 items-center gap-2 rounded-full border border-gold/40 bg-card/95 px-4 text-sm font-medium text-foreground shadow-card backdrop-blur-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
       >
-        <ul className="mx-auto flex max-w-2xl items-stretch justify-between px-2">
-          {primaryItems.map((item) => {
-            const active = pathname === item.href.split("#")[0];
-            return (
-              <li key={item.label} className="flex-1">
-                <Link
-                  to={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className="relative flex min-h-[56px] flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="bottom-nav-active"
-                      className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-gold"
-                    />
-                  )}
-                  <item.icon
-                    className={`h-5 w-5 ${active ? "text-gold" : "text-muted-foreground"}`}
-                    aria-hidden="true"
-                  />
-                  <span
-                    className={`text-[10px] font-medium tracking-wide ${
-                      active ? "text-foreground" : "text-muted-foreground"
-                    }`}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-          <li className="flex-1">
-            <button
-              onClick={() => setOpen(true)}
-              aria-label="More sections"
-              className="flex min-h-[56px] w-full flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        <Menu className="h-5 w-5 text-gold" aria-hidden="true" />
+        Menu
+        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} aria-hidden="true" />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <>
+            <div className="fixed inset-0 -z-10" onClick={() => setOpen(false)} />
+            <motion.nav
+              aria-label="Primary"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mt-2 max-h-[75vh] w-64 overflow-y-auto rounded-2xl border border-gold/25 bg-card p-2 shadow-elevated"
             >
-              <MoreHorizontal className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-              <span className="text-[10px] font-medium tracking-wide text-muted-foreground">More</span>
-            </button>
-          </li>
-        </ul>
-      </nav>
-
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetContent side="bottom" className="rounded-t-3xl border-gold/25">
-          <SheetHeader className="text-left">
-            <SheetTitle className="font-display text-2xl">The Family Archive</SheetTitle>
-          </SheetHeader>
-          <AnimatePresence>
-            <div className="mt-4 grid grid-cols-2 gap-3 pb-6">
-              {[...moreItems, ...(family?.is_admin || family?.is_platform_admin ? [adminItem] : [])].map((item, i) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                >
+              {items.map((item) => {
+                const active = pathname === item.href.split("#")[0];
+                return (
                   <Link
+                    key={item.label}
                     to={item.href}
                     onClick={() => setOpen(false)}
-                    className="flex min-h-[56px] items-center gap-3 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-gold/40 hover:bg-muted"
+                    aria-current={active ? "page" : undefined}
+                    className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-muted ${active ? "bg-muted font-semibold" : ""}`}
                   >
-                    <item.icon className="h-5 w-5 text-gold" aria-hidden="true" />
+                    <item.icon className="h-4 w-4 text-gold" aria-hidden="true" />
                     {item.label}
                   </Link>
-                </motion.div>
-              ))}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: moreItems.length * 0.03 }}
-                className="col-span-2"
+                );
+              })}
+              <button
+                onClick={() => { setOpen(false); signOut(); }}
+                className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-destructive hover:bg-destructive/10"
               >
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    signOut();
-                  }}
-                  className="flex min-h-[56px] w-full items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-                >
-                  <LogOut className="h-5 w-5" aria-hidden="true" />
-                  Sign out{user?.email ? ` — ${user.email}` : ""}
-                </button>
-              </motion.div>
-            </div>
-
-          </AnimatePresence>
-        </SheetContent>
-      </Sheet>
-    </>
+                <LogOut className="h-4 w-4" aria-hidden="true" />
+                Sign out{user?.email ? ` — ${user.email}` : ""}
+              </button>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
