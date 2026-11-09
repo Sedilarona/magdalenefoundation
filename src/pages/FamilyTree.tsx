@@ -28,7 +28,6 @@ const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
   { icon: GitBranch, label: "Family Tree", href: "/family-tree", active: true },
   { icon: BookHeart, label: "Our Tales", href: "/tales" },
-  { icon: Library, label: "Family Memories", href: "/library" },
   { icon: Gamepad2, label: "Family Tricks", href: "/games" },
   { icon: FolderOpen, label: "Family Resources", href: "/resources" },
   { icon: MapPin, label: "Locate Family", href: "/locate-family" },
@@ -218,7 +217,7 @@ const TreeBranch = ({
 };
 
 const FamilyTree = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -318,11 +317,11 @@ const FamilyTree = () => {
       <AnimatePresence mode="wait">
         {sidebarOpen && (
           <motion.aside
-            initial={{ x: -280, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -280, opacity: 0 }}
+            initial={{ y: -12, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -12, opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed lg:relative z-40 w-[280px] h-screen bg-sidebar border-r border-sidebar-border flex flex-col"
+            className="fixed left-3 top-16 z-50 w-[270px] max-h-[78vh] overflow-hidden rounded-2xl shadow-elevated bg-sidebar border-r border-sidebar-border flex flex-col"
           >
             <div className="p-6 border-b border-sidebar-border">
               <Logo size="md" />
@@ -363,7 +362,7 @@ const FamilyTree = () => {
 
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-foreground/20 z-30 lg:hidden"
+          className="fixed inset-0 bg-foreground/20 z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
