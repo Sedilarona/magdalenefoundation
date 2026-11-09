@@ -307,7 +307,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-dvh bg-background pb-28">
+    <div className="min-h-dvh bg-background pb-10 pt-14">
       <main className="mx-auto w-full max-w-2xl px-4">
         {/* Header */}
         <header className="relative -mx-4 overflow-hidden rounded-b-[28px] bg-[var(--gradient-crest)] px-6 pb-8 pt-10 text-ivory">
