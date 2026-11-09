@@ -206,7 +206,7 @@ const Library = () => {
                     <Link
                       to={item.href}
                       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
-                        item.active
+                        item.href === "/library"
                           ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
                           : ""
                       }`}
