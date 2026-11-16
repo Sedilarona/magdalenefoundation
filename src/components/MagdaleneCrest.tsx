@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import logoAsset from "@/assets/magdalene-logo.png.asset.json";
+import logoUrl from "@/assets/magdalene-logo.png";
 
 interface MagdaleneCrestProps {
   size?: number;
@@ -15,7 +15,7 @@ export const MagdaleneCrest = ({ size = 76, className = "" }: MagdaleneCrestProp
     initial={{ opacity: 0, scale: 0.9 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.6, ease: "easeOut" }}
-    src={logoAsset.url}
+    src={logoUrl}
     width={size}
     height={size}
     alt="The Magdaline Foundation seal — Sethare se se gologolo"
