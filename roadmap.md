@@ -12,5 +12,5 @@
 - [x] Light-mode font visibility pass
 - [x] Social media links on profile (personal/business)
 - [x] Continue where you left off card
-- [ ] More graphics/animations across the app
+- [x] More graphics/animations across the app
 - [ ] Family Resources: "Starting A Business in Botswana" (PDF still needed from user)

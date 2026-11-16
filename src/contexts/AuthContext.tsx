@@ -84,16 +84,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        setLoading(true);
         setTimeout(async () => {
-          await redeemPendingInvite();
-          await fetchProfile(session.user.id);
+          try {
+            await redeemPendingInvite();
+            await fetchProfile(session.user.id);
+          } finally {
+            setLoading(false);
+          }
         }, 0);
       } else {
         setProfile(null);
         setFamily(null);
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     // THEN check for existing session
