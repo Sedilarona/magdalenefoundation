@@ -32,6 +32,8 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import cipaGuide from "@/assets/business/cipa_registration_guide.pdf.asset.json";
+import ppraGuide from "@/assets/business/ppra_tender_guide.pdf.asset.json";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -55,7 +57,7 @@ interface Resource {
   id: string;
   title: string;
   description: string;
-  category: "hymns" | "scripture" | "faith" | "recipes" | "services";
+  category: "hymns" | "scripture" | "faith" | "recipes" | "services" | "business";
   icon: typeof Book;
   language: string;
   available: boolean;
@@ -213,6 +215,30 @@ const resources: Resource[] = [
     externalUrl: "https://lakyc.gov.bw/applications/dashboard/",
     externalLabel: "Open lakyc.gov.bw",
   },
+  {
+    id: "cipa-guide",
+    title: "CIPA Registration Guide (2026)",
+    description:
+      "Step-by-step guide to registering your company with CIPA in Botswana. By School Of Dropouts (Oduetse Obert Machete).",
+    category: "business",
+    icon: Landmark,
+    language: "English",
+    available: false,
+    externalUrl: cipaGuide.url,
+    externalLabel: "Open the guide (PDF)",
+  },
+  {
+    id: "ppra-guide",
+    title: "PPRA Tender Preparation Guide (2026)",
+    description:
+      "How to register with PPRA, get your codes and prepare winning government tenders in Botswana. By School Of Dropouts.",
+    category: "business",
+    icon: Landmark,
+    language: "English",
+    available: false,
+    externalUrl: ppraGuide.url,
+    externalLabel: "Open the guide (PDF)",
+  },
 ];
 
 const categoryLabels = {
@@ -221,6 +247,7 @@ const categoryLabels = {
   faith: "Faith Materials",
   recipes: "Recipes",
   services: "Services & Forms",
+  business: "Starting A Business in Bw",
 };
 
 const Resources = () => {
