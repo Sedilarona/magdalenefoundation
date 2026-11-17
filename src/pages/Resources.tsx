@@ -32,8 +32,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import cipaGuide from "@/assets/business/cipa_registration_guide.pdf.asset.json";
-import ppraGuide from "@/assets/business/ppra_tender_guide.pdf.asset.json";
+import { businessGuides } from "@/data/businessGuides";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -66,6 +65,7 @@ interface Resource {
   hasHymns?: boolean;
   hasScripture?: boolean;
   recipe?: Recipe;
+  guideId?: string;
 }
 
 interface ScriptureContent {
@@ -217,27 +217,23 @@ const resources: Resource[] = [
   },
   {
     id: "cipa-guide",
-    title: "CIPA Registration Guide (2026)",
-    description:
-      "Step-by-step guide to registering your company with CIPA in Botswana. By School Of Dropouts (Oduetse Obert Machete).",
+    title: "Registering Your Business with CIPA",
+    description: "Step by step: CIPA profile, documents, name reservation, registering a business name or company, fees and next steps.",
     category: "business",
     icon: Landmark,
     language: "English",
-    available: false,
-    externalUrl: cipaGuide.url,
-    externalLabel: "Open the guide (PDF)",
+    available: true,
+    guideId: "cipa-guide",
   },
   {
     id: "ppra-guide",
-    title: "PPRA Tender Preparation Guide (2026)",
-    description:
-      "How to register with PPRA, get your codes and prepare winning government tenders in Botswana. By School Of Dropouts.",
+    title: "Preparing for Government Tenders (PPRA)",
+    description: "What PPRA codes are, choosing the right ones, costs, registering on IPMS and avoiding rejection.",
     category: "business",
     icon: Landmark,
     language: "English",
-    available: false,
-    externalUrl: ppraGuide.url,
-    externalLabel: "Open the guide (PDF)",
+    available: true,
+    guideId: "ppra-guide",
   },
 ];
 
@@ -550,6 +546,32 @@ const Resources = () => {
                 </div>
               </div>
             </motion.div>
+          ) : selectedResource?.guideId && businessGuides[selectedResource.guideId] ? (
+            (() => { const g = businessGuides[selectedResource.guideId!]; return (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-2xl mx-auto">
+              <div className="bg-card rounded-2xl border border-border shadow-card overflow-hidden">
+                <div className="bg-primary p-6 text-primary-foreground">
+                  <span className="text-sm opacity-80">Starting A Business in Bw</span>
+                  <h2 className="font-display text-2xl font-bold mt-1">{g.title}</h2>
+                  <p className="text-sm opacity-90 mt-2">{g.summary}</p>
+                </div>
+                <div className="p-4 sm:p-6 space-y-3">
+                  {g.sections.map((sec, i) => (
+                    <details key={sec.title} open={i === 0} className="group rounded-xl border border-border bg-background p-4">
+                      <summary className="cursor-pointer font-display font-semibold text-foreground list-none flex justify-between items-center gap-2">
+                        {sec.title}<span className="text-muted-foreground group-open:rotate-180 transition-transform">⌄</span>
+                      </summary>
+                      <div className="mt-3 space-y-3 text-foreground text-sm leading-relaxed">
+                        {sec.intro && <p>{sec.intro}</p>}
+                        {sec.points && <ul className="list-disc pl-5 space-y-1">{sec.points.map((p) => <li key={p}>{p}</li>)}</ul>}
+                        {sec.steps && <ol className="list-decimal pl-5 space-y-1">{sec.steps.map((p) => <li key={p}>{p}</li>)}</ol>}
+                        {sec.note && <p className="bg-muted rounded-lg p-3 text-foreground">{sec.note}</p>}
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </div>
+            </motion.div>); })()
           ) : selectedResource?.hasScripture ? (
             /* Scripture List View */
             <motion.div
@@ -784,7 +806,7 @@ const Resources = () => {
                             onClick={() => setSelectedResource(resource)}
                           >
                             <ExternalLink className="w-4 h-4" />
-                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : resource.recipe ? "View Recipe" : "Read Online"}
+                            {resource.hasHymns ? "View Hymns" : resource.hasScripture ? "Read Scripture" : resource.recipe ? "View Recipe" : resource.guideId ? "Read Guide" : "Read Online"}
                           </Button>
                         ) : (
                           <div className="w-full text-center py-2 text-sm text-muted-foreground bg-sage-50 rounded-lg">
