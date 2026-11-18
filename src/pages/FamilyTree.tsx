@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { TreeViewport } from "@/components/TreeViewport";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard" },
@@ -90,13 +91,14 @@ const MemberNode = ({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className={`relative px-4 py-3 rounded-xl border-2 ${getGenderStyles()} min-w-[180px] text-center shadow-sm cursor-pointer hover:shadow-md transition-all`}
+    <Button
+      variant="outline"
+      aria-expanded={hasChildren ? isExpanded : undefined}
+      aria-label={`${member.full_name}${hasChildren ? (isExpanded ? ", collapse children" : ", expand children") : ""}`}
+      className={`relative h-auto min-h-12 w-28 shrink-0 whitespace-normal px-2 py-1.5 rounded-lg border ${getGenderStyles()} text-center shadow-sm hover:shadow-md transition-shadow`}
       onClick={hasChildren ? onToggle : undefined}
     >
-      <div className="flex items-center justify-center gap-2">
+      <div className="flex items-center justify-center gap-1">
         {hasChildren && (
           <motion.span
             animate={{ rotate: isExpanded ? 90 : 0 }}
@@ -106,7 +108,7 @@ const MemberNode = ({
           </motion.span>
         )}
         <div>
-          <p className="font-medium text-sm">{member.full_name}</p>
+          <p className="font-medium text-xs leading-tight break-words">{member.full_name}</p>
           {member.nickname && (
             <p className="text-xs opacity-75">"{member.nickname}"</p>
           )}
@@ -118,7 +120,7 @@ const MemberNode = ({
           )}
         </div>
       </div>
-    </motion.div>
+    </Button>
   );
 };
 
@@ -148,7 +150,7 @@ const TreeBranch = ({
 
   return (
     <div className="flex flex-col items-center">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
         <MemberNode 
           member={member}
           isExpanded={isExpanded}
@@ -157,7 +159,7 @@ const TreeBranch = ({
         />
         {spouse && (
           <>
-            <div className="w-4 h-0.5 bg-sage-400" />
+            <div className="w-3 h-0.5 bg-sage-400" />
             <MemberNode 
               member={spouse}
               isExpanded={isExpanded}
@@ -178,16 +180,15 @@ const TreeBranch = ({
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="w-0.5 h-6 bg-sage-300 mx-auto" />
+            <div className="w-0.5 h-3 bg-sage-300 mx-auto" />
             
             {children.length > 1 && (
               <div 
-                className="h-0.5 bg-sage-300 mx-auto" 
-                style={{ width: `${Math.min(children.length, 5) * 200}px` }} 
+                className="h-0.5 w-[calc(100%-7rem)] bg-sage-300 mx-auto"
               />
             )}
             
-            <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <div className="flex max-w-[640px] flex-wrap justify-center gap-2 pt-1">
               {children
                 .filter((child, i) => {
                   if (!child.spouse_id) return true;
@@ -198,7 +199,7 @@ const TreeBranch = ({
                 .map((child) => (
                 <div key={child.id} className="flex flex-col items-center">
                   {children.length > 1 && (
-                    <div className="w-0.5 h-4 bg-sage-300" />
+                    <div className="w-0.5 h-2 bg-sage-300" />
                   )}
                   <TreeBranch 
                     member={child}
@@ -368,18 +369,18 @@ const FamilyTree = () => {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 min-w-0 flex flex-col min-h-screen">
         {/* Header */}
         <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="flex items-center justify-between px-4 lg:px-8 h-16">
-            <div className="flex items-center gap-4">
-              <button
+            <div className="flex items-center gap-1 sm:gap-4">
+              <Button variant="ghost" size="icon" aria-label="Open navigation"
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
               >
                 {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-              <h1 className="font-display text-xl font-semibold text-foreground">
+              </Button>
+              <h1 className="font-display text-lg sm:text-xl font-semibold text-foreground">
                 Family Tree
               </h1>
             </div>
@@ -396,10 +397,10 @@ const FamilyTree = () => {
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 lg:p-8 overflow-auto">
+        <main className="flex-1 min-w-0 p-3 lg:p-8">
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-card rounded-xl p-4 border border-sage-100 text-center">
+          <div className="grid grid-cols-4 gap-2 mb-3 [&>div]:p-2 [&_p:first-child]:text-xl [&_p:last-child]:text-[11px] sm:[&>div]:p-4 sm:[&_p:last-child]:text-sm">
+            <div className="bg-card rounded-xl border border-sage-100 text-center">
               <p className="text-2xl font-bold text-foreground">{totalMembers}</p>
               <p className="text-sm text-muted-foreground">Total Members</p>
             </div>
@@ -418,7 +419,7 @@ const FamilyTree = () => {
           </div>
 
           {/* Search */}
-          <div className="relative max-w-md mb-6">
+          <div className="relative max-w-md mb-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search family members..."
@@ -464,7 +465,7 @@ const FamilyTree = () => {
           )}
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-4 mb-6 text-sm">
+          <div className="flex flex-wrap gap-3 mb-3 text-xs sm:text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-blue-100 border-2 border-blue-400" />
               <span className="text-muted-foreground">Male</span>
@@ -480,8 +481,7 @@ const FamilyTree = () => {
           </div>
 
           {/* Tree */}
-          <div className="overflow-x-auto pb-8">
-            <div className="min-w-max flex justify-center">
+          <TreeViewport>
               {rootMember ? (
                 <TreeBranch
                   member={rootMember}
@@ -495,8 +495,7 @@ const FamilyTree = () => {
                   <p className="text-muted-foreground">No family members found</p>
                 </div>
               )}
-            </div>
-          </div>
+          </TreeViewport>
         </main>
       </div>
     </div>
