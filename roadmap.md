@@ -13,4 +13,6 @@
 - [x] Social media links on profile (personal/business)
 - [x] Continue where you left off card
 - [x] More graphics/animations across the app
-- [ ] Family Resources: "Starting A Business in Botswana" (PDF still needed from user)
+- [x] Family Resources: business guides condensed into in-app sections
+- [x] Dark-only appearance with no light/dark switch
+- [x] Difela tsa Lontone: add the UCCSA hymn link

@@ -113,6 +113,8 @@ const resources: Resource[] = [
     icon: Music,
     language: "Setswana",
     available: false,
+    externalUrl: "https://www.scribd.com/document/357295742/Uccsa-Hyms-Lyrics",
+    externalLabel: "Read UCCSA Hymns on Scribd",
   },
   {
     id: "niv-bible",

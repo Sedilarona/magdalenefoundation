@@ -1,15 +1,15 @@
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Moon, Sun, Palette, Loader2 } from "lucide-react";
+import { ArrowLeft, Palette, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme, ACCENT_OPTIONS } from "@/contexts/ThemeContext";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useEffect } from "react";
 
 const Settings = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { mode, accent, toggleMode, setAccent } = useTheme();
+  const { accent, setAccent } = useTheme();
 
   useEffect(() => {
     if (!loading && !user) navigate("/login");
@@ -48,32 +48,23 @@ const Settings = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between py-4 border-b border-border">
-            <div className="flex items-center gap-3">
-              {mode === "dark" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              <div>
-                <Label htmlFor="dark-mode" className="text-base">Dark Mode</Label>
-                <p className="text-sm text-muted-foreground">Toggle a softer, night-friendly theme.</p>
-              </div>
-            </div>
-            <Switch id="dark-mode" checked={mode === "dark"} onCheckedChange={toggleMode} />
-          </div>
-
-          <div className="pt-6">
+          <div>
             <Label className="text-base mb-3 block">Accent Color</Label>
             <p className="text-sm text-muted-foreground mb-4">Pick the color that flavors buttons, links and highlights.</p>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
               {ACCENT_OPTIONS.map((opt) => (
-                <button
+                <Button
                   key={opt.key}
+                  variant="outline"
+                  aria-pressed={accent === opt.key}
                   onClick={() => setAccent(opt.key)}
-                  className={`rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all hover:scale-105 ${
+                  className={`h-auto rounded-xl border-2 p-3 flex flex-col items-center gap-2 transition-all hover:scale-105 ${
                     accent === opt.key ? "border-primary shadow-md" : "border-border"
                   }`}
                 >
                   <span className="w-10 h-10 rounded-full" style={{ background: opt.swatch }} />
                   <span className="text-xs font-medium">{opt.label}</span>
-                </button>
+                </Button>
               ))}
             </div>
           </div>

@@ -1,14 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
-type Mode = "light" | "dark";
 type Accent = "sage" | "royal" | "sunset" | "ocean" | "rose";
 
 interface ThemeContextType {
-  mode: Mode;
+  mode: "dark";
   accent: Accent;
-  setMode: (m: Mode) => void;
   setAccent: (a: Accent) => void;
-  toggleMode: () => void;
 }
 
 const ACCENTS: Record<Accent, { primary: string; ring: string; accent: string }> = {
@@ -22,13 +19,13 @@ const ACCENTS: Record<Accent, { primary: string; ring: string; accent: string }>
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<Mode>(() => (localStorage.getItem("mf-theme-mode") as Mode) || "light");
   const [accent, setAccentState] = useState<Accent>(() => (localStorage.getItem("mf-theme-accent") as Accent) || "sage");
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", mode === "dark");
-    localStorage.setItem("mf-theme-mode", mode);
-  }, [mode]);
+    document.documentElement.classList.add("dark");
+    document.documentElement.style.colorScheme = "dark";
+    localStorage.setItem("mf-theme-mode", "dark");
+  }, []);
 
   useEffect(() => {
     const a = ACCENTS[accent];
@@ -43,10 +40,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   return (
     <ThemeContext.Provider value={{
-      mode, accent,
-      setMode: setModeState,
+      mode: "dark", accent,
       setAccent: setAccentState,
-      toggleMode: () => setModeState(m => m === "light" ? "dark" : "light"),
     }}>
       {children}
     </ThemeContext.Provider>
