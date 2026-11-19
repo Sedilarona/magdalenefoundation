@@ -1,3 +1,4 @@
+import { taleNarrations } from "@/data/taleNarrations";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
@@ -350,7 +351,11 @@ const TaleModal = ({ tale, onClose }: { tale: Tale | null; onClose: () => void }
             <Calendar className="w-4 h-4" />
             <span>{tale.createdAt}</span>
           </div>
-          <NarrateButton text={`${tale.title}. ${tale.content}`} label="Listen to this tale" />
+          {taleNarrations[tale.id] ? (
+            <audio controls preload="none" src={taleNarrations[tale.id]} className="h-10 w-full max-w-[220px]" aria-label="Recorded narration of this tale" />
+          ) : (
+            <NarrateButton text={`${tale.title}. ${tale.content}`} label="Listen to this tale" />
+          )}
         </div>
       </motion.div>
     </motion.div>
