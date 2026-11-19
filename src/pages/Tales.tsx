@@ -235,6 +235,19 @@ It means:
 Remember, my dear children, learning another person's words is the first step to understanding their heart. We may not all believe the same things, but we can always learn about one another with respect, kindness, and honesty. Knowledge builds bridges where ignorance builds walls."`,
     createdAt: "Faith & Understanding",
   },
+  {
+    id: "tale-6",
+    title: "From Shanty to Crossroads: The Story of Palapye",
+    category: "History",
+    content: `Long before modern highways connected Botswana from south to north, the rocky foothills of the Tswapong Hills sheltered some of the region's earliest communities. Stone Age tools, Early Iron Age pottery, and ancient irrigation channels still mark the gorge, hinting at generations who relied on the natural springs flowing out of Photophoto Valley.
+
+In 1889, those reliable springs drew Kgosi Khama III to move the Bangwato capital from drought-stricken Shoshong to this valley, establishing what is now known as Old Palapye, or Phalatswe—the "place of impalas." Almost overnight, the quiet landscape transformed into a bustling town of tens of thousands of people. Traders set up bustling stores, wagons rolled in from across southern Africa, and by 1894, builders had raised a striking Gothic church out of local red mudbrick for the London Missionary Society. Yet prosperity came alongside hardship. Soon after the relocation, illness swept through the settlement, claiming the life of Khama III's beloved wife, Mma Bessie. When the valley's springs eventually began to dry up, the capital could no longer sustain its growing population. In 1902, Khama III ordered another move, relocating the Bangwato capital to Serowe and leaving the red-brick church and stone walls to slowly weather into the National Monument seen today.
+
+The story of Palapye, however, was far from over—it simply shifted a few kilometres west toward the railway line. By the 1930s, a rough-and-tumble settlement known locally as Kwa-Dikotoiseng had sprung up near the tracks. It was a lively camp where contract labourers gathered, traded stories, and drew crowds for weekend boxing matches. Recognizing the need for order as the community expanded, Bangwato regent Tshekedi Khama dispatched the Nwako brothers in the early 1940s to formally organize the growing village.
+
+Sitting almost exactly halfway between Gaborone and Francistown along the A1 highway and railway corridor, modern Palapye steadily grew from a dusty railway siding into a vital national crossroads. Today, the town blends its layered history with rapid growth as a major commercial, industrial, and educational hub—a place where travellers still pause to rest, just as they did when impalas roamed the springs of Phalatswe.`,
+    createdAt: "Palapye History",
+  },
 ];
 
 
